@@ -1,9 +1,15 @@
 package net.frosty.fractals;
 
+import it.unimi.dsi.fastutil.Hash;
+
+import java.io.File;
+import java.io.FileReader;
 import java.lang.reflect.Array;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Scanner;
 
 public class LSystemHelper {
 

@@ -62,4 +62,37 @@ public class TreeBuilder {
         }
     }
 
+    public static void buildThree(String[] sentence, Integer x, Integer y, Integer z, float delta, Float size, World world) {
+        Stack<Vector3f> posStack = new Stack<>();
+        Stack<Float> angleStack = new Stack<>();
+        posStack.push(new Vector3f(x,y,z));
+        angleStack.push(0F);
+
+        Vector3f pos = new Vector3f(x,y,z);
+        Vector3f prev;
+        Float angle = 0F;
+        delta = (float) Math.toRadians(delta);
+
+        for (int i=0;i<sentence.length;i++){
+            prev = new Vector3f(pos);
+            String symbol = sentence[i];
+            if (symbol.equals("F")){
+                pos.x += (float) (size*Math.sin(angle)); //move by size in direction of angle
+                pos.y += (float) (size*Math.cos(angle));
+//                System.out.println("DRAWING BRANCH");
+                drawBranch(prev,pos, world);
+            } else if (symbol.equals("-")) {
+                angle -= delta;
+            } else if (symbol.equals("+")) {
+                angle += delta;
+            } else if (symbol.equals("[")) {
+                posStack.push(new Vector3f(pos));
+                angleStack.push(angle);
+            } else if (symbol.equals("]")) {
+                pos = posStack.pop();
+                angle = angleStack.pop();
+            }
+
+        }
+    }
 }
