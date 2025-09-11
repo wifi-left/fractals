@@ -30,7 +30,7 @@ public class TreeBuilder {
 
     }
 
-    public static void buildSimple(String[] sentence, Integer x, Integer y, Integer z, Float delta, Float size, World world){
+    public static void buildSimple(String[] sentence, int x, int y, int z, float delta, float size, World world){
 
         Stack<Vector3f> posStack = new Stack<>();
         Stack<Float> angleStack = new Stack<>();
@@ -65,11 +65,43 @@ public class TreeBuilder {
         }
     }
 
-    public static void buildThree(String[] sentence, Integer x, Integer y, Integer z, float delta, Float size, World world) {
+    public static void draw3DBranch(Vector3f start, Vector3f end, float radius, World world){
+        Vector3f dir = new Vector3f(end).sub(start).normalize();
+        float distance = start.distance(end);
+        Vector3f pos = new Vector3f(start);
+
+        Vector3f arbitrary = Math.abs(dir.y) < 0.9f ? new Vector3f(0,1,0) : new Vector3f(1,0,0);
+        Vector3f normal = dir.cross(arbitrary, new Vector3f()).normalize();
+        Vector3f binormal = dir.cross(normal, new Vector3f()).normalize();
+
+        while (start.distance(pos)<distance){
+            float angleStep = 1/(2*radius);
+            float theta = 0F;
+
+            while (theta<2*Math.PI){
+                theta+=angleStep;
+                float cosT = (float) Math.cos(theta);
+                float sinT = (float) Math.sin(theta);
+                Vector3f offset = new Vector3f(normal).mul(cosT*radius).add(new Vector3f(binormal).mul(sinT*radius));
+                Vector3f circlePoint = new Vector3f(pos).add(offset);
+                drawBranch(pos,circlePoint,world);
+            }
+            pos.add(new Vector3f(dir).mul(0.5F));
+        }
+        BlockPos bp = new BlockPos(Math.round(end.x),Math.round(end.y),Math.round(end.z));
+        world.setBlockState(bp, Blocks.OAK_WOOD.getDefaultState());
+
+    }
+
+    public static void buildThree(String[] sentence, int x, int y, int z, float delta, float length, float radius, World world) {
         Stack<Vector3f> posStack = new Stack<>();
-        Stack<Float> angleStack = new Stack<>();
+        Stack<Vector3f> dirStack = new Stack<>();
+        Stack<Float> rStack = new Stack<>();
+        Stack<Float> lStack = new Stack<>();
         posStack.push(new Vector3f(x,y,z));
-        angleStack.push(0F);
+        dirStack.push(new Vector3f(0,1,0));
+        rStack.push(radius);
+        lStack.push(length);
 
         Vector3f pos = new Vector3f(x,y,z);
         Vector3f prev;
@@ -80,40 +112,44 @@ public class TreeBuilder {
             prev = new Vector3f(pos);
             String symbol = sentence[i];
             if (symbol.equals("F")){
-                pos.x += (float) (size*Math.sin(angle)); //move by size in direction of angle
-                pos.y += (float) (size*Math.cos(angle));
-//                System.out.println("DRAWING BRANCH");
-                drawBranch(prev,pos, world);
+                pos = pos.add(new Vector3f(direction).mul(length));
+                System.out.println("DRAWING BRANCH - " + (float)(i)/sentence.length*100 + "%");
+                draw3DBranch(prev,pos,radius,world);
+
             } else if (symbol.equals("-")) {
-                direction = direction.mul(new Matrix3f(
-                        (float)Math.cos(-delta),(float)Math.sin(-delta),0F,
-                        (float)-Math.sin(-delta),(float)Math.cos(-delta),0F,
-                        0F,0F,1F));
+                direction.mul(new Matrix3f().rotationY(-delta));
 
             } else if (symbol.equals("+")) {
-                direction = direction.mul(new Matrix3f(
-                        (float)Math.cos(delta),(float)Math.sin(delta),0F,
-                        (float)-Math.sin(delta),(float)Math.cos(delta),0F,
-                        0F,0F,1F));
+                direction.mul(new Matrix3f().rotationY(delta));
 
             } else if (symbol.equals("&")) {
-                direction = direction.mul(new Matrix3f(
-                        (float)Math.cos(delta),0F,(float)-Math.sin(delta),
-                        0F,1F,0F,
-                        (float)Math.sin(delta),0F,(float)Math.cos(delta)));
+                direction.mul(new Matrix3f().rotationX(delta));
 
             } else if (symbol.equals("^")) {
-                direction = direction.mul(new Matrix3f(
-                        (float)Math.cos(-delta),0F,(float)-Math.sin(-delta),
-                        0F,1F,0F,
-                        (float)Math.sin(-delta),0F,(float)Math.cos(-delta)));
+                direction.mul(new Matrix3f().rotationX(-delta));
+
+            } else if (symbol.equals("<")) {
+                direction.mul(new Matrix3f().rotationZ(-delta));
+
+            } else if (symbol.equals(">")) {
+                direction.mul(new Matrix3f().rotationZ(-delta));
+
+            } else if (symbol.equals("!")) {
+                radius *= 0.75F;
+
+            } else if (symbol.equals("@")) {
+                length *= 0.75F;
 
             } else if (symbol.equals("[")) {
                 posStack.push(new Vector3f(pos));
-                angleStack.push(angle);
+                dirStack.push(new Vector3f(direction));
+                rStack.push(radius);
+                lStack.push(length);
             } else if (symbol.equals("]")) {
                 pos = posStack.pop();
-                angle = angleStack.pop();
+                direction = dirStack.pop();
+                radius = rStack.pop();
+                length = lStack.pop();
             }
 
         }
