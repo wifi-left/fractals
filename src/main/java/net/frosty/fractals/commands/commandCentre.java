@@ -33,19 +33,20 @@ public class commandCentre {
                 .then(CommandManager.argument("x", IntegerArgumentType.integer())
                 .then(CommandManager.argument("y", IntegerArgumentType.integer())
                 .then(CommandManager.argument("z", IntegerArgumentType.integer())
-                .then(CommandManager.argument("size", FloatArgumentType.floatArg())
+                .then(CommandManager.argument("length", FloatArgumentType.floatArg())
+                .then(CommandManager.argument("radius", FloatArgumentType.floatArg())
                 .then(CommandManager.argument("iterations", IntegerArgumentType.integer())
-                .then(CommandManager.argument("ruleset", IntegerArgumentType.integer()).executes(commandCentre::threeTree))))))));
+                .then(CommandManager.argument("ruleset", IntegerArgumentType.integer()).executes(commandCentre::threeTree)))))))));
 
     }
 
     private static int twoTree(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
-        Integer x = IntegerArgumentType.getInteger(context,"x");
-        Integer y = IntegerArgumentType.getInteger(context,"y");
-        Integer z = IntegerArgumentType.getInteger(context,"z");
-        Float size = FloatArgumentType.getFloat(context,"size");
-        Integer iterations = IntegerArgumentType.getInteger(context,"iterations");
-        Integer ruleNo = IntegerArgumentType.getInteger(context,"ruleset");
+        int x = IntegerArgumentType.getInteger(context,"x");
+        int y = IntegerArgumentType.getInteger(context,"y");
+        int z = IntegerArgumentType.getInteger(context,"z");
+        float size = FloatArgumentType.getFloat(context,"size");
+        int iterations = IntegerArgumentType.getInteger(context,"iterations");
+        int ruleNo = IntegerArgumentType.getInteger(context,"ruleset");
         World world = context.getSource().getWorld();
 
         System.out.println("GENERATING TREE...");
@@ -73,35 +74,31 @@ public class commandCentre {
     }
 
     private static int threeTree(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
-        Integer x = IntegerArgumentType.getInteger(context,"x");
-        Integer y = IntegerArgumentType.getInteger(context,"y");
-        Integer z = IntegerArgumentType.getInteger(context,"z");
-        Float size = FloatArgumentType.getFloat(context,"size");
-        Integer iterations = IntegerArgumentType.getInteger(context,"iterations");
-        Integer ruleNo = IntegerArgumentType.getInteger(context,"ruleset");
+        int x = IntegerArgumentType.getInteger(context,"x");
+        int y = IntegerArgumentType.getInteger(context,"y");
+        int z = IntegerArgumentType.getInteger(context,"z");
+        float length = FloatArgumentType.getFloat(context,"length");
+        float radius = FloatArgumentType.getFloat(context,"radius");
+        int iterations = IntegerArgumentType.getInteger(context,"iterations");
+        int ruleNo = IntegerArgumentType.getInteger(context,"ruleset");
         World world = context.getSource().getWorld();
 
         System.out.println("GENERATING TREE...");
 
         String[] axiom = {"A"};
-        float delta = 22.5F;
+        float delta =30F;
         HashMap<Integer, HashMap<String, String[]>> rulesets  = new HashMap<>() ;
         HashMap<String, String[]> rules = new HashMap<>();
-        rules.put("A", new String[]{"[", "&", "F", "L", "!", "A", "]", "/", "/", "/", "/","/","'","[","&","F","L","!","A","]","/","/","/","/","/","/","/","'","[","&","F","L","!","A","]"});
-        rules.put("F", new String[]{"S", "/", "/", "/", "/", "/", "F"});
-        rules.put("S", new String[]{"F", "L"});
+        rules.put("A", new String[]{"F","[","&","-","-","-","F","!","@","A","]","F","[","^","-","F","!","@","A","]","F","[","&","+","F","!","@","A","]"});
         rulesets.put(1,rules);
 
-        rules = new HashMap<>();
-        rules.put("F", new String[]{"F", "F", "-", "[", "-", "F", "+", "F", "+", "F", "]","+","[","+","F","-","F","-","F","]"});
-        rulesets.put(2,rules);
 
         String[] sentence = axiom.clone();
         for (int i=0;i<iterations;i++){
             System.out.println("ITERATION " + (i+1) + "...");
             sentence = LSystemHelper.UpdateSentence(sentence, rulesets.get(ruleNo));
-//            System.out.println("BUILDING... " + (i+1) + "...");
-            TreeBuilder.buildThree(sentence,x,y,z,delta,size,world);
+            System.out.println("BUILDING... " + (i+1) + "...");
+            TreeBuilder.buildThree(sentence,x,y,z,delta,length,radius,world);
         }
 
         return 1;
