@@ -5,6 +5,9 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
+import org.joml.Matrix3d;
+import org.joml.Matrix3f;
+import org.joml.Matrix3fc;
 import org.joml.Vector3f;
 
 import java.util.Objects;
@@ -70,7 +73,7 @@ public class TreeBuilder {
 
         Vector3f pos = new Vector3f(x,y,z);
         Vector3f prev;
-        Float angle = 0F;
+        Vector3f direction = new Vector3f(0,1,0);
         delta = (float) Math.toRadians(delta);
 
         for (int i=0;i<sentence.length;i++){
@@ -82,9 +85,29 @@ public class TreeBuilder {
 //                System.out.println("DRAWING BRANCH");
                 drawBranch(prev,pos, world);
             } else if (symbol.equals("-")) {
-                angle -= delta;
+                direction = direction.mul(new Matrix3f(
+                        (float)Math.cos(-delta),(float)Math.sin(-delta),0F,
+                        (float)-Math.sin(-delta),(float)Math.cos(-delta),0F,
+                        0F,0F,1F));
+
             } else if (symbol.equals("+")) {
-                angle += delta;
+                direction = direction.mul(new Matrix3f(
+                        (float)Math.cos(delta),(float)Math.sin(delta),0F,
+                        (float)-Math.sin(delta),(float)Math.cos(delta),0F,
+                        0F,0F,1F));
+
+            } else if (symbol.equals("&")) {
+                direction = direction.mul(new Matrix3f(
+                        (float)Math.cos(delta),0F,(float)-Math.sin(delta),
+                        0F,1F,0F,
+                        (float)Math.sin(delta),0F,(float)Math.cos(delta)));
+
+            } else if (symbol.equals("^")) {
+                direction = direction.mul(new Matrix3f(
+                        (float)Math.cos(-delta),0F,(float)-Math.sin(-delta),
+                        0F,1F,0F,
+                        (float)Math.sin(-delta),0F,(float)Math.cos(-delta)));
+
             } else if (symbol.equals("[")) {
                 posStack.push(new Vector3f(pos));
                 angleStack.push(angle);
