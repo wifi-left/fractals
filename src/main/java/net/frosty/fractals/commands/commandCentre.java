@@ -84,16 +84,21 @@ public class commandCentre {
         World world = context.getSource().getWorld();
 
         System.out.println("GENERATING TREE...");
-
-        String[] axiom = {"A"};
+        HashMap<Integer, String> axioms = new HashMap<>();
         float delta =30F;
         HashMap<Integer, HashMap<String, String[]>> rulesets  = new HashMap<>() ;
         HashMap<String, String[]> rules = new HashMap<>();
+        axioms.put(1,"A");
         rules.put("A", new String[]{"F","[","&","-","-","-","F","!","@","A","]","F","[","^","-","F","!","@","A","]","F","[","&","+","F","!","@","A","]"});
+        rules.put("F", new String[]{"F","[",">",">","!","!","F","L","]"});
         rulesets.put(1,rules);
 
+        rules = new HashMap<>();
+        axioms.put(2,"F");
+        rules.put("F", new String[]{"F","F","[","&","-","-","-","F","!","@","F","]","F","[","^","-","F","!","@","F","]","[","&","+","F","!","@","F","]"});
+        rulesets.put(2,rules);
 
-        String[] sentence = axiom.clone();
+        String[] sentence = new String[] {axioms.get(ruleNo)};
         for (int i=0;i<iterations;i++){
             System.out.println("ITERATION " + (i+1) + "...");
             sentence = LSystemHelper.UpdateSentence(sentence, rulesets.get(ruleNo));
