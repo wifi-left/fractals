@@ -31,4 +31,19 @@ public class LSystemHelper {
         }
         return temp.toArray(new String[0]);
     }
+
+    public static String[] UpdateStochasticSentence(String[] sentence, HashMap<String, String[][]> rules){
+        List<String> temp = new ArrayList<>();
+        for (String symbol:sentence) {
+            if (rules.containsKey(symbol)) {
+                int randomIndex = (int)(Math.random() * rules.get(symbol).length)+1;
+                for (String s : rules.get(symbol)[randomIndex]) {
+                    temp.add(s);
+                }
+            } else {
+                temp.add(symbol);
+            }
+        }
+        return temp.toArray(new String[0]);
+    }
 }

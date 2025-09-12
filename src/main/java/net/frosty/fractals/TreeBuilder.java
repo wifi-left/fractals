@@ -1,7 +1,9 @@
 package net.frosty.fractals;
 
 import net.minecraft.block.Block;
+import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
+import net.minecraft.state.property.Properties;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import org.joml.Matrix3f;
@@ -15,13 +17,21 @@ public class TreeBuilder {
         Vector3f dir = new Vector3f(end).sub(start).normalize(0.5F);
         float distance = start.distance(end);
         Vector3f pos = new Vector3f(start);
+
+        BlockState state;
+        if (block.equals(Blocks.OAK_LEAVES)) {
+            state = block.getDefaultState().with(Properties.PERSISTENT, true);
+        } else{
+            state = block.getDefaultState();
+        }
+
         while (start.distance(pos)<distance){
             BlockPos bp = new BlockPos(Math.round(pos.x),Math.round(pos.y),Math.round(pos.z));
-            world.setBlockState(bp, block.getDefaultState());
+            world.setBlockState(bp, state);
             pos.add(dir);
         }
         BlockPos bp = new BlockPos(Math.round(end.x),Math.round(end.y),Math.round(end.z));
-        world.setBlockState(bp, block.getDefaultState());
+        world.setBlockState(bp, state);
 
     }
 
@@ -103,7 +113,7 @@ public class TreeBuilder {
             float sinT = (float) Math.sin(theta);
             Vector3f offset = new Vector3f(dir).mul(cosT*radius).add(new Vector3f(normal).mul(sinT*radius*0.5F));
             Vector3f ovalPoint = new Vector3f(centre).add(offset);
-            drawBranch(ovalPoint,ovalPoint,world,Blocks.OAK_LEAVES); //make this take in an argument of OAK_LEAVES
+            drawBranch(centre,ovalPoint,world,Blocks.OAK_LEAVES); //make this take in an argument of OAK_LEAVES
         }
 
     }
