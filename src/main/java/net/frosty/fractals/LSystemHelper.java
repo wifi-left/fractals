@@ -36,7 +36,8 @@ public class LSystemHelper {
         List<String> temp = new ArrayList<>();
         for (String symbol:sentence) {
             if (rules.containsKey(symbol)) {
-                int randomIndex = (int)(Math.random() * rules.get(symbol).length)+1;
+                int randomIndex = (int)(Math.random() * rules.get(symbol).length);
+                System.out.println(randomIndex);
                 for (String s : rules.get(symbol)[randomIndex]) {
                     temp.add(s);
                 }
