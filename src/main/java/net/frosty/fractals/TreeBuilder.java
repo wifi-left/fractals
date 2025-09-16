@@ -3,13 +3,16 @@ package net.frosty.fractals;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
+import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.state.property.Properties;
+import net.minecraft.text.Text;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import org.joml.Matrix3f;
 import org.joml.Vector3f;
 
 import java.util.Stack;
+import java.util.UUID;
 
 public class TreeBuilder {
 
@@ -101,14 +104,12 @@ public class TreeBuilder {
     public static void drawLeaf(Vector3f start, Vector3f dir,float radius, World world){
         Vector3f centre  = new Vector3f(start).add(new Vector3f(dir).mul(radius));
 
-        Vector3f arbitrary = Math.abs(dir.y) < 0.9f ? new Vector3f(0,1,0) : new Vector3f(1,0,0);
+        Vector3f arbitrary = new Vector3f((float)Math.random(),(float)Math.random(),(float)Math.random());
         Vector3f normal = dir.cross(arbitrary, new Vector3f()).normalize();
 
         float angleStep = 1/(2*radius);
-        float theta = 0F;
 
-        while (theta<2*Math.PI){
-            theta+=angleStep;
+        for (float theta=0f;theta<2*Math.PI;theta+=angleStep){
             float cosT = (float) Math.cos(theta);
             float sinT = (float) Math.sin(theta);
             Vector3f offset = new Vector3f(dir).mul(cosT*radius).add(new Vector3f(normal).mul(sinT*radius*0.5F));
@@ -118,7 +119,30 @@ public class TreeBuilder {
 
     }
 
-    public static void buildThree(String[] sentence, int x, int y, int z, float delta, float length, float radius, World world) {
+    public static void drawSphereLeaf(Vector3f start, Vector3f dir,float radius, World world){
+        Vector3f centre  = new Vector3f(start).add(new Vector3f(dir).mul(radius));
+
+        Vector3f arbitrary = Math.abs(dir.y) < 0.9f ? new Vector3f(0,1,0) : new Vector3f(1,0,0);
+        Vector3f normal = dir.cross(arbitrary, new Vector3f()).normalize();
+        Vector3f binormal = dir.cross(normal, new Vector3f()).normalize();
+
+        float angleStep = 1/(2*radius);
+
+        for (float theta=0f;theta<2*Math.PI;theta+=angleStep){
+            for (float delta=0f;delta<2*Math.PI;delta+=angleStep) {
+                float y = (float) Math.cos(theta);
+                float x = (float) (Math.cos(theta)*Math.cos(theta));
+                float z = (float) (Math.cos(theta)*Math.sin(theta));
+
+                Vector3f offset = new Vector3f(dir).mul(x).add(new Vector3f(normal).mul(y)).add(new Vector3f(binormal).mul(z));
+                Vector3f spherePoint = new Vector3f(centre).add(offset);
+                drawBranch(centre, spherePoint, world, Blocks.OAK_LEAVES); //make this take in an argument of OAK_LEAVES
+            }
+        }
+
+    }
+
+    public static void buildThree(String[] sentence, int x, int y, int z, float delta, float length, float radius, World world, ServerPlayerEntity player, int iteration) {
         Stack<Vector3f> posStack = new Stack<>();
         Stack<Vector3f> dirStack = new Stack<>();
         Stack<Float> rStack = new Stack<>();
@@ -133,16 +157,20 @@ public class TreeBuilder {
         Vector3f direction = new Vector3f(0,1,0);
         delta = (float) Math.toRadians(delta);
 
+        final UUID message_UUID = UUID.randomUUID();
         for (int i=0;i<sentence.length;i++){
             prev = new Vector3f(pos);
+
             String symbol = sentence[i];
-            if (symbol.equals("F")) {
+            player.sendMessage(Text.of("Iteration " + iteration + ": " + (int) ((float) (i) / sentence.length * 100) + "% complete"),true);
+            if (symbol.equals("F") || symbol.equals("f")) {
                 pos = pos.add(new Vector3f(direction).mul(length));
-                System.out.println("DRAWING BRANCH - " + (float) (i) / sentence.length * 100 + "%");
+//                System.out.println("DRAWING BRANCH - " + (float) (i) / sentence.length * 100 + "%");
                 draw3DBranch(prev, pos, radius, world);
 
-            } else if (symbol.equals("A")){
+            } else if (symbol.equals("L")){
                 drawLeaf(pos,direction,4F,world);
+//                drawSphereLeaf(pos,direction,4F,world);
 
             } else if (symbol.equals("-")) {
                 direction.mul(new Matrix3f().rotationY(-delta));
@@ -160,7 +188,7 @@ public class TreeBuilder {
                 direction.mul(new Matrix3f().rotationZ(-delta));
 
             } else if (symbol.equals(">")) {
-                direction.mul(new Matrix3f().rotationZ(-delta));
+                direction.mul(new Matrix3f().rotationZ(delta));
 
             } else if (symbol.equals("!")) {
                 radius *= 0.75F;
