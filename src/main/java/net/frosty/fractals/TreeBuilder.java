@@ -38,7 +38,7 @@ public class TreeBuilder {
 
     }
 
-    public static void buildSimple(String[] sentence, int x, int y, int z, float delta, float size, World world){
+    public static void buildSimple(String[] sentence, int x, int y, int z, float delta, float size, World world, Block block){
 
         Stack<Vector3f> posStack = new Stack<>();
         Stack<Float> angleStack = new Stack<>();
@@ -48,16 +48,23 @@ public class TreeBuilder {
         Vector3f pos = new Vector3f(x,y,z);
         Vector3f prev;
         Float angle = 0F;
+        if (block.equals(Blocks.BLACK_CONCRETE)){
+            angle = (float) (-Math.PI/2);
+        }
         delta = (float) Math.toRadians(delta);
 
         for (int i=0;i<sentence.length;i++){
             prev = new Vector3f(pos);
             String symbol = sentence[i];
-            if (symbol.equals("F")){
+            if (symbol.equals("F")) {
+                pos.x += (float) (size * Math.sin(angle)); //move by size in direction of angle
+                pos.y += (float) (size * Math.cos(angle));
+//                System.out.println("DRAWING BRANCH");
+                drawBranch(prev, pos, world, block);
+            } else if (symbol.equals("A") || symbol.equals("B")){
                 pos.x += (float) (size*Math.sin(angle)); //move by size in direction of angle
                 pos.y += (float) (size*Math.cos(angle));
-//                System.out.println("DRAWING BRANCH");
-                drawBranch(prev,pos,world,Blocks.OAK_WOOD);
+                drawBranch(prev,pos,world,block);
             } else if (symbol.equals("-")) {
                 angle -= delta;
             } else if (symbol.equals("+")) {
@@ -73,7 +80,7 @@ public class TreeBuilder {
         }
     }
 
-    public static void draw3DBranch(Vector3f start, Vector3f end, float radius, World world){
+    public static void draw3DBranch(Vector3f start, Vector3f end, float radius, World world, Block block){
         Vector3f dir = new Vector3f(end).sub(start).normalize();
         float distance = start.distance(end);
         Vector3f pos = new Vector3f(start);
@@ -92,12 +99,12 @@ public class TreeBuilder {
                 float sinT = (float) Math.sin(theta);
                 Vector3f offset = new Vector3f(normal).mul(cosT*radius).add(new Vector3f(binormal).mul(sinT*radius));
                 Vector3f circlePoint = new Vector3f(pos).add(offset);
-                drawBranch(pos,circlePoint,world,Blocks.OAK_WOOD);
+                drawBranch(pos,circlePoint,world,block);
             }
             pos.add(new Vector3f(dir).mul(0.5F));
         }
         BlockPos bp = new BlockPos(Math.round(end.x),Math.round(end.y),Math.round(end.z));
-        world.setBlockState(bp, Blocks.OAK_WOOD.getDefaultState());
+        world.setBlockState(bp, block.getDefaultState());
 
     }
 
@@ -142,7 +149,7 @@ public class TreeBuilder {
 
     }
 
-    public static void buildThree(String[] sentence, int x, int y, int z, float delta, float length, float radius, World world, ServerPlayerEntity player, int iteration) {
+    public static void buildThree(String[] sentence, int x, int y, int z, float delta, float length, float radius, World world, ServerPlayerEntity player, int iteration, Block block) {
         Stack<Vector3f> posStack = new Stack<>();
         Stack<Vector3f> dirStack = new Stack<>();
         Stack<Float> rStack = new Stack<>();
@@ -157,16 +164,22 @@ public class TreeBuilder {
         Vector3f direction = new Vector3f(0,1,0);
         delta = (float) Math.toRadians(delta);
 
+        if (block.equals(Blocks.BLACK_CONCRETE)){
+            direction = new Vector3f(0,1,0);
+        }
+
         final UUID message_UUID = UUID.randomUUID();
         for (int i=0;i<sentence.length;i++){
             prev = new Vector3f(pos);
-
+            direction.normalize();
             String symbol = sentence[i];
+//            System.out.println(symbol + " sada: " + direction);
             player.sendMessage(Text.of("Iteration " + iteration + ": " + (int) ((float) (i) / sentence.length * 100) + "% complete"),true);
             if (symbol.equals("F") || symbol.equals("f")) {
-                pos = pos.add(new Vector3f(direction).mul(length));
+//                System.out.println("direction: " + direction);
+                pos.add(new Vector3f(direction).mul(length));
 //                System.out.println("DRAWING BRANCH - " + (float) (i) / sentence.length * 100 + "%");
-                draw3DBranch(prev, pos, radius, world);
+                draw3DBranch(prev, pos, radius, world, block);
 
             } else if (symbol.equals("L")){
                 drawLeaf(pos,direction,4F,world);
@@ -178,6 +191,9 @@ public class TreeBuilder {
             } else if (symbol.equals("+")) {
                 direction.mul(new Matrix3f().rotationY(delta));
 
+            } else if (symbol.equals("|")) {
+                direction.mul(new Matrix3f().rotationY((float) (Math.PI)));
+
             } else if (symbol.equals("&")) {
                 direction.mul(new Matrix3f().rotationX(delta));
 
@@ -185,10 +201,10 @@ public class TreeBuilder {
                 direction.mul(new Matrix3f().rotationX(-delta));
 
             } else if (symbol.equals("<")) {
-                direction.mul(new Matrix3f().rotationZ(-delta));
+                direction.mul(new Matrix3f().rotationZ(delta));
 
             } else if (symbol.equals(">")) {
-                direction.mul(new Matrix3f().rotationZ(delta));
+                direction.mul(new Matrix3f().rotationZ(-delta));
 
             } else if (symbol.equals("!")) {
                 radius *= 0.75F;
