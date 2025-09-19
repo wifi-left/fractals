@@ -49,7 +49,7 @@ public class TreeBuilder {
         Vector3f prev;
         Float angle = 0F;
         if (block.equals(Blocks.BLACK_CONCRETE)){
-            angle = (float) (-Math.PI/2);
+            angle = (float) (Math.PI/2);
         }
         delta = (float) Math.toRadians(delta);
 
@@ -150,6 +150,83 @@ public class TreeBuilder {
     }
 
     public static void buildThree(String[] sentence, int x, int y, int z, float delta, float length, float radius, World world, ServerPlayerEntity player, int iteration, Block block) {
+        Stack<Vector3f> posStack = new Stack<>();
+        Stack<Vector3f> dirStack = new Stack<>();
+        Stack<Float> rStack = new Stack<>();
+        Stack<Float> lStack = new Stack<>();
+        posStack.push(new Vector3f(x,y,z));
+        dirStack.push(new Vector3f(0,1,0));
+        rStack.push(radius);
+        lStack.push(length);
+
+        Vector3f pos = new Vector3f(x,y,z);
+        Vector3f prev;
+        Vector3f direction = new Vector3f(0,1,0);
+        delta = (float) Math.toRadians(delta);
+
+        if (block.equals(Blocks.BLACK_CONCRETE)){
+            direction = new Vector3f(0,1,0);
+        }
+
+        for (int i=0;i<sentence.length;i++){
+            prev = new Vector3f(pos);
+            direction.normalize();
+            String symbol = sentence[i];
+//            System.out.println(symbol + " sada: " + direction);
+            player.sendMessage(Text.of("Iteration " + iteration + ": " + (int) ((float) (i) / sentence.length * 100) + "% complete"),true);
+            if (symbol.equals("F") || symbol.equals("f")) {
+//                System.out.println("direction: " + direction);
+                pos.add(new Vector3f(direction).mul(length));
+//                System.out.println("DRAWING BRANCH - " + (float) (i) / sentence.length * 100 + "%");
+                draw3DBranch(prev, pos, radius, world, block);
+
+            } else if (symbol.equals("L")){
+                drawLeaf(pos,direction,4F,world);
+//                drawSphereLeaf(pos,direction,4F,world);
+
+            } else if (symbol.equals("-")) {
+                direction.mul(new Matrix3f().rotationY(-delta));
+
+            } else if (symbol.equals("+")) {
+                direction.mul(new Matrix3f().rotationY(delta));
+
+            } else if (symbol.equals("|")) {
+                direction.mul(new Matrix3f().rotationY((float) (Math.PI)));
+
+            } else if (symbol.equals("&")) {
+                direction.mul(new Matrix3f().rotationX(delta));
+
+            } else if (symbol.equals("^")) {
+                direction.mul(new Matrix3f().rotationX(-delta));
+
+            } else if (symbol.equals("<")) {
+                direction.mul(new Matrix3f().rotationZ(delta));
+
+            } else if (symbol.equals(">")) {
+                direction.mul(new Matrix3f().rotationZ(-delta));
+
+            } else if (symbol.equals("!")) {
+                radius *= 0.5F;
+
+            } else if (symbol.equals("@")) {
+                length *= 0.5F;
+
+            } else if (symbol.equals("[")) {
+                posStack.push(new Vector3f(pos));
+                dirStack.push(new Vector3f(direction));
+                rStack.push(radius);
+                lStack.push(length);
+            } else if (symbol.equals("]")) {
+                pos = posStack.pop();
+                direction = dirStack.pop();
+                radius = rStack.pop();
+                length = lStack.pop();
+            }
+
+        }
+    }
+
+    public static void buildThreeFractal(String[] sentence, int x, int y, int z, float delta, float length, float radius, World world, ServerPlayerEntity player, int iteration, Block block) {
         Stack<Vector3f> posStack = new Stack<>();
         Stack<Vector3f> dirStack = new Stack<>();
         Stack<Vector3f> upStack = new Stack<>();

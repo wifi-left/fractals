@@ -28,9 +28,8 @@ public class commandCentre {
                 .then(CommandManager.argument("y", IntegerArgumentType.integer())
                 .then(CommandManager.argument("z", IntegerArgumentType.integer())
                 .then(CommandManager.argument("size", FloatArgumentType.floatArg())
-                .then(CommandManager.argument("delta", FloatArgumentType.floatArg())
                 .then(CommandManager.argument("iterations", IntegerArgumentType.integer())
-                .then(CommandManager.argument("ruleset", IntegerArgumentType.integer()).executes(commandCentre::twoTree)))))))));
+                .then(CommandManager.argument("ruleset", IntegerArgumentType.integer()).executes(commandCentre::twoTree))))))));
 
         dispatcher.register(CommandManager.literal("3D_TREE")
                 .then(CommandManager.argument("x", IntegerArgumentType.integer())
@@ -59,7 +58,6 @@ public class commandCentre {
         int y = IntegerArgumentType.getInteger(context,"y");
         int z = IntegerArgumentType.getInteger(context,"z");
         float size = FloatArgumentType.getFloat(context,"size");
-        float delta = FloatArgumentType.getFloat(context,"delta");
         int iterations = IntegerArgumentType.getInteger(context,"iterations");
         int ruleNo = IntegerArgumentType.getInteger(context,"ruleset");
         World world = context.getSource().getWorld();
@@ -69,12 +67,15 @@ public class commandCentre {
         HashMap<Integer, HashMap<String, String[]>> rulesets  = new HashMap<>() ;
         HashMap<Integer, String[]> axioms = new HashMap<>();
         HashMap<Integer, Block> blocks = new HashMap<>();
+        HashMap<Integer, Float> deltas = new HashMap<>();
         axioms.put(1,new String[]{"F"});
         blocks.put(1, Blocks.OAK_WOOD);
+        deltas.put(1,25.7F);
             HashMap<String, String[]> rules = new HashMap<>();
             rules.put("F", new String[]{"F", "[", "+", "F", "]", "F", "[", "-", "F", "]", "F"});
             rulesets.put(1,rules);
 
+        deltas.put(2,120F);
         axioms.put(2,new String[]{"A","-","B","-","B"});
         blocks.put(2, Blocks.BLACK_CONCRETE);
             rules = new HashMap<>();
@@ -82,13 +83,36 @@ public class commandCentre {
             rules.put("B", new String[]{"B","B"});
             rulesets.put(2,rules);
 
+        axioms.put(3,new String[]{"A"});
+        blocks.put(3, Blocks.BLACK_CONCRETE);
+        deltas.put(3,90F);
+        rules = new HashMap<>();
+        rules.put("A", ("-BF+AFA+FB-").split(""));
+        rules.put("B", ("+AF-BFB-FA+").split(""));
+        rulesets.put(3,rules);
+
+        deltas.put(4,60F);
+        axioms.put(4, ("F++F++F").split(""));
+        blocks.put(4, Blocks.BLACK_CONCRETE);
+        rules = new HashMap<>();
+        rules.put("F", ("F-F++F-F").split(""));
+        rulesets.put(4,rules);
+
+        deltas.put(5,90F);
+        axioms.put(5, ("FX").split(""));
+        blocks.put(5, Blocks.BLACK_CONCRETE);
+        rules = new HashMap<>();
+        rules.put("X", ("X+YF").split(""));
+        rules.put("Y", ("FX-Y").split(""));
+        rulesets.put(5,rules);
+
         String[] sentence = axioms.get(ruleNo);
         for (int i=0;i<iterations;i++){
             System.out.println("ITERATION " + (i+1) + "...");
             sentence = LSystemHelper.UpdateSentence(sentence, rulesets.get(ruleNo), false);
 //            System.out.println("BUILDING... " + (i+1) + "...");
         }
-        TreeBuilder.buildSimple(sentence,x,y,z,delta,size,world,blocks.get(ruleNo));
+        TreeBuilder.buildSimple(sentence,x,y,z,deltas.get(ruleNo),size,world,blocks.get(ruleNo));
 
         return 1;
     }
@@ -112,9 +136,12 @@ public class commandCentre {
                 } else {
                     sentenceHolder[0] = LSystemHelper.UpdateSentence(sentenceHolder[0], rules, (iteration >= iterations - 1));
                 }
-                System.out.println(String.join("",sentenceHolder[0]));
 //                System.out.println("BUILDING iteration " + iteration + "...");
-                TreeBuilder.buildThree(sentenceHolder[0], x, y, z, delta, length, radius, world, player, iteration, block);
+                if (block.equals(Blocks.BLACK_CONCRETE)) {
+                    TreeBuilder.buildThreeFractal(sentenceHolder[0], x, y, z, delta, length, radius, world, player, iteration, block);
+                } else{
+                    TreeBuilder.buildThree(sentenceHolder[0], x, y, z, delta, length, radius, world, player, iteration, block);
+                }
 
                 i++;
                 CompletableFuture.delayedExecutor(1, TimeUnit.SECONDS)
