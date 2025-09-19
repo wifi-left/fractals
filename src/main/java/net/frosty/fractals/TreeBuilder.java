@@ -152,6 +152,8 @@ public class TreeBuilder {
     public static void buildThree(String[] sentence, int x, int y, int z, float delta, float length, float radius, World world, ServerPlayerEntity player, int iteration, Block block) {
         Stack<Vector3f> posStack = new Stack<>();
         Stack<Vector3f> dirStack = new Stack<>();
+        Stack<Vector3f> upStack = new Stack<>();
+        Stack<Vector3f> rightStack = new Stack<>();
         Stack<Float> rStack = new Stack<>();
         Stack<Float> lStack = new Stack<>();
         posStack.push(new Vector3f(x,y,z));
@@ -168,12 +170,17 @@ public class TreeBuilder {
             direction = new Vector3f(0,1,0);
         }
 
-        final UUID message_UUID = UUID.randomUUID();
+        Vector3f up = new Vector3f(0, 0, 1);      // arbitrary initial up
+        Vector3f right = direction.cross(up, new Vector3f()).normalize();
+        upStack.push(new Vector3f(up));
+        rightStack.push(new Vector3f(right));
+
         for (int i=0;i<sentence.length;i++){
             prev = new Vector3f(pos);
             direction.normalize();
+            up.normalize();
+            right.normalize();
             String symbol = sentence[i];
-//            System.out.println(symbol + " sada: " + direction);
             player.sendMessage(Text.of("Iteration " + iteration + ": " + (int) ((float) (i) / sentence.length * 100) + "% complete"),true);
             if (symbol.equals("F") || symbol.equals("f")) {
 //                System.out.println("direction: " + direction);
@@ -186,25 +193,34 @@ public class TreeBuilder {
 //                drawSphereLeaf(pos,direction,4F,world);
 
             } else if (symbol.equals("-")) {
-                direction.mul(new Matrix3f().rotationY(-delta));
+                Matrix3f rot = new Matrix3f().rotation(-delta, up.x, up.y, up.z);
+                direction.mul(rot);
+                right.mul(rot);
 
             } else if (symbol.equals("+")) {
-                direction.mul(new Matrix3f().rotationY(delta));
-
-            } else if (symbol.equals("|")) {
-                direction.mul(new Matrix3f().rotationY((float) (Math.PI)));
+                Matrix3f rot = new Matrix3f().rotation(delta, up.x, up.y, up.z);
+                direction.mul(rot);
+                right.mul(rot);
 
             } else if (symbol.equals("&")) {
-                direction.mul(new Matrix3f().rotationX(delta));
+                Matrix3f rot = new Matrix3f().rotation(-delta, right.x, right.y, right.z);
+                direction.mul(rot);
+                up.mul(rot);
 
             } else if (symbol.equals("^")) {
-                direction.mul(new Matrix3f().rotationX(-delta));
+                Matrix3f rot = new Matrix3f().rotation(delta, right.x, right.y, right.z);
+                direction.mul(rot);
+                up.mul(rot);
 
             } else if (symbol.equals("<")) {
-                direction.mul(new Matrix3f().rotationZ(delta));
+                Matrix3f rot = new Matrix3f().rotation(-delta, direction.x, direction.y, direction.z);
+                right.mul(rot);
+                up.mul(rot);
 
             } else if (symbol.equals(">")) {
-                direction.mul(new Matrix3f().rotationZ(-delta));
+                Matrix3f rot = new Matrix3f().rotation(delta, direction.x, direction.y, direction.z);
+                right.mul(rot);
+                up.mul(rot);
 
             } else if (symbol.equals("!")) {
                 radius *= 0.75F;
@@ -216,13 +232,18 @@ public class TreeBuilder {
                 posStack.push(new Vector3f(pos));
                 dirStack.push(new Vector3f(direction));
                 rStack.push(radius);
-                lStack.push(length);
+                upStack.push(new Vector3f(up));
+                rightStack.push(new Vector3f(right));
+
             } else if (symbol.equals("]")) {
                 pos = posStack.pop();
                 direction = dirStack.pop();
                 radius = rStack.pop();
                 length = lStack.pop();
+                right = rightStack.pop();
+                up = upStack.pop();
             }
+            System.out.println(symbol + " sada: " + direction);
 
         }
     }

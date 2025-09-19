@@ -158,7 +158,7 @@ public class commandCentre {
         axioms.put(2,new String[]{"X"});
         blocks.put(2, Blocks.BLACK_CONCRETE);
         rules = new HashMap<>();
-        rules.put("X", ("&<XF&<XFX-F&>>XFX^F+>>XFX-F>X->").split(""));
+        rules.put("X", ("^<XF^<XFX-F^>>XFX&F+>>XFX-F>X->").split(""));
         rulesets.put(2,rules);
         asyncThree(server,world,x,y,z,length,radius,delta,iterations,axioms.get(ruleNo),rulesets.get(ruleNo),context.getSource().getPlayer(),blocks.get(ruleNo));
 
