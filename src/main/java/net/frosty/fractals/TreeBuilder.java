@@ -11,6 +11,7 @@ import net.minecraft.world.World;
 import org.joml.Matrix3f;
 import org.joml.Vector3f;
 
+import java.util.Arrays;
 import java.util.Stack;
 import java.util.UUID;
 
@@ -194,10 +195,10 @@ public class TreeBuilder {
                 direction.mul(new Matrix3f().rotationY((float) (Math.PI)));
 
             } else if (symbol.equals("&")) {
-                direction.mul(new Matrix3f().rotationX(delta));
+                direction.mul(new Matrix3f().rotationX(-delta));
 
             } else if (symbol.equals("^")) {
-                direction.mul(new Matrix3f().rotationX(-delta));
+                direction.mul(new Matrix3f().rotationX(delta));
 
             } else if (symbol.equals("<")) {
                 direction.mul(new Matrix3f().rotationZ(delta));
@@ -206,11 +207,12 @@ public class TreeBuilder {
                 direction.mul(new Matrix3f().rotationZ(-delta));
 
             } else if (symbol.equals("!")) {
-                radius *= 0.5F;
+                radius *= 0.75F;
 
             } else if (symbol.equals("@")) {
-                length *= 0.5F;
+                length *= 0.75F;
 
+            } else if (symbol.equals("[")) {
             } else if (symbol.equals("[")) {
                 posStack.push(new Vector3f(pos));
                 dirStack.push(new Vector3f(direction));
@@ -247,10 +249,15 @@ public class TreeBuilder {
             direction = new Vector3f(0,1,0);
         }
 
+        System.out.println("Sentence: " + Arrays.toString(sentence));
+        System.out.println("Variables Initialized");
+
         Vector3f up = new Vector3f(0, 0, 1);      // arbitrary initial up
         Vector3f right = direction.cross(up, new Vector3f()).normalize();
         upStack.push(new Vector3f(up));
         rightStack.push(new Vector3f(right));
+
+        System.out.println("Vectors Calculated");
 
         for (int i=0;i<sentence.length;i++){
             prev = new Vector3f(pos);
@@ -259,9 +266,11 @@ public class TreeBuilder {
             right.normalize();
             String symbol = sentence[i];
             player.sendMessage(Text.of("Iteration " + iteration + ": " + (int) ((float) (i) / sentence.length * 100) + "% complete"),true);
+//            System.out.println(symbol + " sada: " + i);
             if (symbol.equals("F") || symbol.equals("f")) {
 //                System.out.println("direction: " + direction);
                 pos.add(new Vector3f(direction).mul(length));
+                System.out.println("length: "+length);
 //                System.out.println("DRAWING BRANCH - " + (float) (i) / sentence.length * 100 + "%");
                 draw3DBranch(prev, pos, radius, world, block);
 
@@ -303,12 +312,13 @@ public class TreeBuilder {
                 radius *= 0.75F;
 
             } else if (symbol.equals("@")) {
-                length *= 0.75F;
+                length *= 0.85F;
 
             } else if (symbol.equals("[")) {
                 posStack.push(new Vector3f(pos));
                 dirStack.push(new Vector3f(direction));
                 rStack.push(radius);
+                lStack.push(length);
                 upStack.push(new Vector3f(up));
                 rightStack.push(new Vector3f(right));
 
@@ -320,8 +330,8 @@ public class TreeBuilder {
                 right = rightStack.pop();
                 up = upStack.pop();
             }
-            System.out.println(symbol + " sada: " + direction);
 
         }
+        System.out.println("Build Complete");
     }
 }

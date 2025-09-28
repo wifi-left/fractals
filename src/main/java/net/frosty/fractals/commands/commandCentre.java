@@ -69,13 +69,13 @@ public class commandCentre {
         HashMap<Integer, Block> blocks = new HashMap<>();
         HashMap<Integer, Float> deltas = new HashMap<>();
         axioms.put(1,new String[]{"F"});
-        blocks.put(1, Blocks.OAK_WOOD);
+        blocks.put(1, Blocks.SPRUCE_WOOD);
         deltas.put(1,25.7F);
             HashMap<String, String[]> rules = new HashMap<>();
             rules.put("F", new String[]{"F", "[", "+", "F", "]", "F", "[", "-", "F", "]", "F"});
             rulesets.put(1,rules);
 
-        deltas.put(2,120F);
+        deltas.put(2,120F); //Sierpinski Triangle
         axioms.put(2,new String[]{"A","-","B","-","B"});
         blocks.put(2, Blocks.BLACK_CONCRETE);
             rules = new HashMap<>();
@@ -83,7 +83,7 @@ public class commandCentre {
             rules.put("B", new String[]{"B","B"});
             rulesets.put(2,rules);
 
-        axioms.put(3,new String[]{"A"});
+        axioms.put(3,new String[]{"A"});    //Hilbert Curve
         blocks.put(3, Blocks.BLACK_CONCRETE);
         deltas.put(3,90F);
         rules = new HashMap<>();
@@ -91,7 +91,7 @@ public class commandCentre {
         rules.put("B", ("+AF-BFB-FA+").split(""));
         rulesets.put(3,rules);
 
-        deltas.put(4,60F);
+        deltas.put(4,60F);  //Koch Snowflake
         axioms.put(4, ("F++F++F").split(""));
         blocks.put(4, Blocks.BLACK_CONCRETE);
         rules = new HashMap<>();
@@ -106,6 +106,59 @@ public class commandCentre {
         rules.put("Y", ("FX-Y").split(""));
         rulesets.put(5,rules);
 
+        deltas.put(6,20F);
+        axioms.put(6, ("F").split(""));
+        blocks.put(6, Blocks.SPRUCE_WOOD);
+        rules = new HashMap<>();
+        rules.put("F", ("F[+F]F[-F][F]").split(""));
+        rulesets.put(6,rules);
+
+        deltas.put(7,22.5F);
+        axioms.put(7, ("F").split(""));
+        blocks.put(7, Blocks.SPRUCE_WOOD);
+        rules = new HashMap<>();
+        rules.put("F", ("FF-[-F+F+F]+[+F-F-F]").split(""));
+        rulesets.put(7,rules);
+
+        deltas.put(8,22.5F);
+        axioms.put(8, ("X").split(""));
+        blocks.put(8, Blocks.SPRUCE_WOOD);
+        rules = new HashMap<>();
+        rules.put("X", ("F-[[X]+X]+F[+FX]-X").split(""));
+        rules.put("F", ("FF").split(""));
+        rulesets.put(8,rules);
+
+        deltas.put(9,90F);  //BROKEN
+        axioms.put(9, ("F-F-F-F").split(""));
+        blocks.put(9, Blocks.BLACK_CONCRETE);
+        rules = new HashMap<>();
+        rules.put("X", ("FF-F-F-F-FF").split(""));
+        rulesets.put(9,rules);
+
+        deltas.put(10,90F); //BROKEN
+        axioms.put(10, ("F-F-F-F").split(""));
+        blocks.put(10, Blocks.BLACK_CONCRETE);
+        rules = new HashMap<>();
+        rules.put("X", ("FF-F-F-F-F-F+F").split(""));
+        rulesets.put(10,rules);
+
+        deltas.put(11,90F);
+        axioms.put(11, ("F+F+F+F").split(""));
+        blocks.put(11, Blocks.BLACK_CONCRETE);
+        rules = new HashMap<>();
+        rules.put("F", ("F+f-FF+F+FF+Ff+FF-f+FF-F-FF-Ff-FFF").split(""));
+        rules.put("f", ("ffffff").split(""));
+        rulesets.put(11,rules);
+
+        deltas.put(12,20F);
+        axioms.put(12, ("F").split(""));
+        blocks.put(12, Blocks.SPRUCE_WOOD);
+        rules = new HashMap<>();
+        rules.put("F", ("F[+F][-F]").split(""));
+        rulesets.put(12,rules);
+
+
+
         String[] sentence = axioms.get(ruleNo);
         for (int i=0;i<iterations;i++){
             System.out.println("ITERATION " + (i+1) + "...");
@@ -118,13 +171,15 @@ public class commandCentre {
     }
 
     private static void asyncThree(MinecraftServer server, World world, int x, int y, int z, float length, float radius, float delta, int iterations, String[] axiom, HashMap<String, String[]> rules, ServerPlayerEntity player, Block block){
-        final String[][] sentenceHolder = {axiom};
+        System.out.println("iterations: " + iterations);
+        System.out.println("delta: " + delta);
 
         Runnable runIteration = new Runnable() {
             int i = 0;
-
+            String[] sentenceHolder = axiom.clone();
             @Override
             public void run() {
+                System.out.println("i number: " + i);
                 if (i >= iterations) {
                     System.out.println("Tree complete!");
                     return;
@@ -132,19 +187,24 @@ public class commandCentre {
                 int iteration = i + 1;
 //                System.out.println("ITERATION " + iteration + "...");
                 if (block.equals(Blocks.BLACK_CONCRETE)) {
-                    sentenceHolder[0] = LSystemHelper.UpdateSentence(sentenceHolder[0], rules,false);
+                    sentenceHolder = LSystemHelper.UpdateSentence(sentenceHolder, rules,false);
                 } else {
-                    sentenceHolder[0] = LSystemHelper.UpdateSentence(sentenceHolder[0], rules, (iteration >= iterations - 1));
+                    sentenceHolder = LSystemHelper.UpdateSentence(sentenceHolder, rules, false);
                 }
-//                System.out.println("BUILDING iteration " + iteration + "...");
-                if (block.equals(Blocks.BLACK_CONCRETE)) {
-                    TreeBuilder.buildThreeFractal(sentenceHolder[0], x, y, z, delta, length, radius, world, player, iteration, block);
-                } else{
-                    TreeBuilder.buildThree(sentenceHolder[0], x, y, z, delta, length, radius, world, player, iteration, block);
+                System.out.println("BUILDING iteration " + iteration + "...");
+                System.out.println(block);
+//                System.out.println(Arrays.toString(sentenceHolder));
+                if (block.equals(Blocks.BLACK_CONCRETE) && iteration==iterations) {
+                    TreeBuilder.buildThreeFractal(sentenceHolder, x, y, z, delta, length, radius, world, player, iteration, block);
+                } else if (!block.equals(Blocks.BLACK_CONCRETE)){
+                    System.out.println('e');
+                    TreeBuilder.buildThreeFractal(sentenceHolder, x, y, z, delta, length, radius, world, player, iteration, block);
+                    System.out.println("built layer");
                 }
 
+
                 i++;
-                CompletableFuture.delayedExecutor(1, TimeUnit.SECONDS)
+                CompletableFuture.delayedExecutor(0, TimeUnit.SECONDS)
                         .execute(this);
             }
         };
@@ -170,24 +230,30 @@ public class commandCentre {
         HashMap<Integer, Block> blocks = new HashMap<>();
         HashMap<Integer, HashMap<String, String[]>> rulesets  = new HashMap<>() ;
         HashMap<String, String[]> rules = new HashMap<>();
+
         axioms.put(1,new String[]{"A"});
         blocks.put(1,Blocks.OAK_WOOD);
-        rules.put("A", new String[]{"F","[","&","-","-","-","F","!","@","A","]","F","[","^","-","F","!","@","A","]","F","[","&","+","F","!","@","A","]"});
-        rules.put("F", new String[]{"F","[",">",">","!","!","L","]"});
+        rules.put("A", new String[]{"F","[","^","-","-","-","F","!","@","A","]","F","[","&","-","F","!","@","A","]","F","[","^","+","F","!","@","A","]"});
+        rules.put("F", new String[]{"F","[","<","<","!","!","L","]"});
         rulesets.put(1,rules);
-
-        rules = new HashMap<>();
-        axioms.put(2,new String[]{"A"});
-        rules.put("A", new String[]{"F","[","&","-","-","-","F","!","@","F","]","[","^","-","F","!","@","F","]","[","&","+","F","!","@","F","]"});
-        rules.put("F", new String[]{"F","[",">",">","!","!","L","]"});
-        rulesets.put(2,rules);
 
         axioms.put(2,new String[]{"X"});
         blocks.put(2, Blocks.BLACK_CONCRETE);
         rules = new HashMap<>();
         rules.put("X", ("^<XF^<XFX-F^>>XFX&F+>>XFX-F>X->").split(""));
         rulesets.put(2,rules);
+
+        axioms.put(3,new String[]{"A"});
+        blocks.put(3, Blocks.OAK_WOOD);
+        rules = new HashMap<>();
+        rules.put("A", ("^[&@FL!A]>>>>>'[&@FL!A]>>>>>>>'[&@FL!A]").split(""));
+        rules.put("F", ("S>>>>>F").split(""));
+        rules.put("S", ("@!FL").split(""));
+        rulesets.put(3,rules);
+
         asyncThree(server,world,x,y,z,length,radius,delta,iterations,axioms.get(ruleNo),rulesets.get(ruleNo),context.getSource().getPlayer(),blocks.get(ruleNo));
+
+
 
         return 1;
     }
@@ -239,17 +305,17 @@ public class commandCentre {
         HashMap<String, String[][]> rules = new HashMap<>();
         axioms.put(1,"B");
         rules.put("A", new String[][]{
-                {"F","[","&","-","-","-","F","!","@","A","]","A","!","@"},
-                {"F","[","^","-","F","!","@","A","]","A","!","@"},
-                {"F","[","&","+","F","!","@","A","]","A","!","@"},
-                {"F","[","&","-","-","-","F","!","@","A","]","[","^","-","F","!","@","A","]","[","&","+","F","!","@","A","]"}
+                {"F","[","^","-","-","-","F","!","@","A","]","A","!","@"},
+                {"F","[","&","-","F","!","@","A","]","A","!","@"},
+                {"F","[","^","+","F","!","@","A","]","A","!","@"},
+                {"F","[","^","-","-","-","F","!","@","A","]","[","&","-","F","!","@","A","]","[","^","+","F","!","@","A","]"}
         });
         rules.put("B", new String[][]{
                 {"f","[","!","@","f","A","]"}
         });
         rules.put("F", new String[][]{
-                {"F","[",">",">","!","!","L","]"},
                 {"F","[","<","<","!","!","L","]"},
+                {"F","[",">",">","!","!","L","]"},
                 {"F","[","&","&","!","!","L","]"},
                 {"F","[","^","^","!","!","L","]"}
         });
@@ -258,10 +324,10 @@ public class commandCentre {
         rules = new HashMap<>();
         axioms.put(2,"B");
         rules.put("A", new String[][]{
-                {"F","[","&","-","-","-","F","!","@","A","]","A","!","@"},
-                {"F","[","^","-","F","!","@","A","]","A","!","@"},
-                {"F","[","&","+","F","!","@","A","]","A","!","@"},
-                {"F","[","&","-","-","-","F","!","@","A","]","[","^","-","F","!","@","A","]","[","&","+","F","!","@","A","]"}
+                {"F","[","^","-","-","-","F","!","@","A","]","A","!","@"},
+                {"F","[","&","-","F","!","@","A","]","A","!","@"},
+                {"F","[","^","+","F","!","@","A","]","A","!","@"},
+                {"F","[","^","-","-","-","F","!","@","A","]","[","&","-","F","!","@","A","]","[","^","+","F","!","@","A","]"}
         });
         rules.put("B", new String[][]{
                 {"f","[","!","@","f","A","]"}
