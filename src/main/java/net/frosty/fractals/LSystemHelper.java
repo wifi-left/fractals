@@ -1,6 +1,7 @@
 package net.frosty.fractals;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
@@ -34,6 +35,7 @@ public class LSystemHelper {
         for (String symbol:sentence) {
             if (rules.containsKey(symbol) && !(b && (symbol=="F" || symbol=="A"))) {
                 int randomIndex = (int)(Math.random() * rules.get(symbol).length);
+//                System.out.println(randomIndex +"/"+rules.get(symbol).length);
                 for (String s : rules.get(symbol)[randomIndex]) {
                     temp.add(s);
                 }

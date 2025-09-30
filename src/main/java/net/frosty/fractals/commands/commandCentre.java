@@ -16,7 +16,6 @@ import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.world.World;
 
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
@@ -37,9 +36,8 @@ public class commandCentre {
                 .then(CommandManager.argument("z", IntegerArgumentType.integer())
                 .then(CommandManager.argument("length", FloatArgumentType.floatArg())
                 .then(CommandManager.argument("radius", FloatArgumentType.floatArg())
-                .then(CommandManager.argument("delta", FloatArgumentType.floatArg())
                 .then(CommandManager.argument("iterations", IntegerArgumentType.integer())
-                .then(CommandManager.argument("ruleset", IntegerArgumentType.integer()).executes(commandCentre::threeTree))))))))));
+                .then(CommandManager.argument("ruleset", IntegerArgumentType.integer()).executes(commandCentre::threeTree)))))))));
 
         dispatcher.register(CommandManager.literal("STOCHASTIC_TREE")
                 .then(CommandManager.argument("x", IntegerArgumentType.integer())
@@ -48,8 +46,9 @@ public class commandCentre {
                 .then(CommandManager.argument("length", FloatArgumentType.floatArg())
                 .then(CommandManager.argument("radius", FloatArgumentType.floatArg())
                 .then(CommandManager.argument("delta", FloatArgumentType.floatArg())
+                .then(CommandManager.argument("decay", FloatArgumentType.floatArg())
                 .then(CommandManager.argument("iterations", IntegerArgumentType.integer())
-                .then(CommandManager.argument("ruleset", IntegerArgumentType.integer()).executes(commandCentre::stochasticTree))))))))));
+                .then(CommandManager.argument("ruleset", IntegerArgumentType.integer()).executes(commandCentre::stochasticTree)))))))))));
 
     }
 
@@ -170,7 +169,7 @@ public class commandCentre {
         return 1;
     }
 
-    private static void asyncThree(MinecraftServer server, World world, int x, int y, int z, float length, float radius, float delta, int iterations, String[] axiom, HashMap<String, String[]> rules, ServerPlayerEntity player, Block block){
+    private static void asyncThree(MinecraftServer server, World world, int x, int y, int z, float length, float radius, float delta, int iterations, String[] axiom, HashMap<String, String[]> rules, ServerPlayerEntity player, Block block, Float decay){
         System.out.println("iterations: " + iterations);
         System.out.println("delta: " + delta);
 
@@ -195,16 +194,16 @@ public class commandCentre {
                 System.out.println(block);
 //                System.out.println(Arrays.toString(sentenceHolder));
                 if (block.equals(Blocks.BLACK_CONCRETE) && iteration==iterations) {
-                    TreeBuilder.buildThreeFractal(sentenceHolder, x, y, z, delta, length, radius, world, player, iteration, block);
-                } else if (!block.equals(Blocks.BLACK_CONCRETE)){
-                    System.out.println('e');
-                    TreeBuilder.buildThreeFractal(sentenceHolder, x, y, z, delta, length, radius, world, player, iteration, block);
-                    System.out.println("built layer");
+                    TreeBuilder.buildThreeFractal(sentenceHolder, x, y, z, delta, length, radius, world, player, iteration, block, decay);
+                } else if (!block.equals(Blocks.BLACK_CONCRETE) && iteration==iterations){
+//                    System.out.println('e');
+                    TreeBuilder.buildThreeFractal(sentenceHolder, x, y, z, delta, length, radius, world, player, iteration, block, decay);
+//                    System.out.println("built layer");
                 }
 
 
                 i++;
-                CompletableFuture.delayedExecutor(0, TimeUnit.SECONDS)
+                CompletableFuture.delayedExecutor(1, TimeUnit.SECONDS)
                         .execute(this);
             }
         };
@@ -219,7 +218,6 @@ public class commandCentre {
         int z = IntegerArgumentType.getInteger(context,"z");
         float length = FloatArgumentType.getFloat(context,"length");
         float radius = FloatArgumentType.getFloat(context,"radius");
-        float delta = FloatArgumentType.getFloat(context,"delta");
         int iterations = IntegerArgumentType.getInteger(context,"iterations");
         int ruleNo = IntegerArgumentType.getInteger(context,"ruleset");
         World world = context.getSource().getWorld();
@@ -230,40 +228,57 @@ public class commandCentre {
         HashMap<Integer, Block> blocks = new HashMap<>();
         HashMap<Integer, HashMap<String, String[]>> rulesets  = new HashMap<>() ;
         HashMap<String, String[]> rules = new HashMap<>();
+        HashMap<Integer, Float> deltas = new HashMap<>();
+        HashMap<Integer, Float> decays = new HashMap<>();
 
         axioms.put(1,new String[]{"A"});
         blocks.put(1,Blocks.OAK_WOOD);
-        rules.put("A", new String[]{"F","[","^","-","-","-","F","!","@","A","]","F","[","&","-","F","!","@","A","]","F","[","^","+","F","!","@","A","]"});
-        rules.put("F", new String[]{"F","[","<","<","!","!","L","]"});
+        deltas.put(1,20F);
+        decays.put(1,0.8F);
+        rules.put("A", ("f[-^<@!A]F[&@!A]F[+^<@!A]").split(""));
+        rules.put("F", ("f[<<L]").split(""));
         rulesets.put(1,rules);
 
         axioms.put(2,new String[]{"X"});
         blocks.put(2, Blocks.BLACK_CONCRETE);
         rules = new HashMap<>();
+        deltas.put(2,90F);
+        decays.put(2,1F);
         rules.put("X", ("^<XF^<XFX-F^>>XFX&F+>>XFX-F>X->").split(""));
         rulesets.put(2,rules);
 
         axioms.put(3,new String[]{"A"});
         blocks.put(3, Blocks.OAK_WOOD);
         rules = new HashMap<>();
-        rules.put("A", ("^[&@FL!A]>>>>>'[&@FL!A]>>>>>>>'[&@FL!A]").split(""));
+        deltas.put(3,22.5F);
+        decays.put(3,1F);
+        rules.put("A", ("[&@FL!A]>>>>>'[&@FL!A]>>>>>>>'[&@FL!A]").split(""));
         rules.put("F", ("S>>>>>F").split(""));
-        rules.put("S", ("@!FL").split(""));
+        rules.put("S", ("F[^^L]").split(""));
         rulesets.put(3,rules);
 
-        asyncThree(server,world,x,y,z,length,radius,delta,iterations,axioms.get(ruleNo),rulesets.get(ruleNo),context.getSource().getPlayer(),blocks.get(ruleNo));
+        axioms.put(4,new String[]{"A"});
+        blocks.put(4, Blocks.OAK_WOOD);
+        rules = new HashMap<>();
+        deltas.put(4,22.5F);
+        decays.put(4,1F);
+        rules.put("A", ("[&@FL!A]>>>>>'[&@FL!A]>>>>>>>'[&@FL!A]").split(""));
+        rules.put("F", ("S>>>>>F").split(""));
+        rules.put("S", ("F[^^L]").split(""));
+        rulesets.put(4,rules);
+
+        asyncThree(server,world,x,y,z,length,radius,deltas.get(ruleNo),iterations,axioms.get(ruleNo),rulesets.get(ruleNo),context.getSource().getPlayer(),blocks.get(ruleNo),decays.get(ruleNo));
 
 
 
         return 1;
     }
 
-    private static void asyncStochasticThree(MinecraftServer server, World world, int x, int y, int z, float length, float radius, float delta, int iterations, String axiom, HashMap<String, String[][]> rules, ServerPlayerEntity player){
-        final String[][] sentenceHolder = { new String[]{axiom}};
+    private static void asyncStochasticThree(MinecraftServer server, World world, int x, int y, int z, float length, float radius, float delta, int iterations, String[] axiom, HashMap<String, String[][]> rules, ServerPlayerEntity player, float decay){
 
         Runnable runIteration = new Runnable() {
             int i = 0;
-
+            String[] sentenceHolder = axiom.clone();
             @Override
             public void run() {
                 if (i >= iterations) {
@@ -272,13 +287,15 @@ public class commandCentre {
                 }
                 int iteration = i + 1;
 //                System.out.println("ITERATION " + iteration + "...");
-                sentenceHolder[0] = LSystemHelper.UpdateStochasticSentence(sentenceHolder[0], rules,(iteration>=iterations-1));
+                sentenceHolder = LSystemHelper.UpdateStochasticSentence(sentenceHolder, rules, false);
 
 //                System.out.println("BUILDING iteration " + iteration + "...");
-                TreeBuilder.buildThree(sentenceHolder[0], x, y, z, delta, length, radius, world, player, iteration, Blocks.OAK_WOOD);
+                if (iteration==iterations) {
+                    TreeBuilder.buildThreeFractal(sentenceHolder, x, y, z, delta, length, radius, world, player, iteration, Blocks.OAK_WOOD, decay);
+                }
 
                 i++;
-                CompletableFuture.delayedExecutor(1, TimeUnit.SECONDS)
+                CompletableFuture.delayedExecutor(0, TimeUnit.SECONDS)
                         .execute(this);
             }
         };
@@ -294,16 +311,17 @@ public class commandCentre {
         float length = FloatArgumentType.getFloat(context,"length");
         float radius = FloatArgumentType.getFloat(context,"radius");
         float delta = FloatArgumentType.getFloat(context,"delta");
+        float decay = FloatArgumentType.getFloat(context,"decay");
         int iterations = IntegerArgumentType.getInteger(context,"iterations");
         int ruleNo = IntegerArgumentType.getInteger(context,"ruleset");
         World world = context.getSource().getWorld();
         MinecraftServer server = context.getSource().getServer();
 
         System.out.println("GENERATING TREE...");
-        HashMap<Integer, String> axioms = new HashMap<>();
+        HashMap<Integer, String[]> axioms = new HashMap<>();
         HashMap<Integer, HashMap<String, String[][]>> rulesets  = new HashMap<>() ;
         HashMap<String, String[][]> rules = new HashMap<>();
-        axioms.put(1,"B");
+        axioms.put(1,new String[]{"B"});
         rules.put("A", new String[][]{
                 {"F","[","^","-","-","-","F","!","@","A","]","A","!","@"},
                 {"F","[","&","-","F","!","@","A","]","A","!","@"},
@@ -322,25 +340,24 @@ public class commandCentre {
         rulesets.put(1,rules);
 
         rules = new HashMap<>();
-        axioms.put(2,"B");
+        axioms.put(2,new String[]{"B"});
         rules.put("A", new String[][]{
-                {"F","[","^","-","-","-","F","!","@","A","]","A","!","@"},
-                {"F","[","&","-","F","!","@","A","]","A","!","@"},
-                {"F","[","^","+","F","!","@","A","]","A","!","@"},
-                {"F","[","^","-","-","-","F","!","@","A","]","[","&","-","F","!","@","A","]","[","^","+","F","!","@","A","]"}
+                ("F[^&@FL!A][@F!A]").split(""),
+                ("F[^>>>>>'&@FL!A][@F!A]").split(""),
+                ("F[^>>>>>>>>>>>>&@FL!A][@F!A]").split(""),
+                ("F[&@FL!A]>>>>>'[&@FL!A]>>>>>>>'[&@FL!A]").split(""),
+                ("F[&@FL!A]>>>>>'[&@FL!A]>>>>>>>'[&@FL!A]").split("")
         });
         rules.put("B", new String[][]{
                 {"f","[","!","@","f","A","]"}
         });
         rules.put("F", new String[][]{
-                {"F","[",">",">","!","!","L","]"},
-                {"F","[","<","<","!","!","L","]"},
-                {"F","[","&","&","!","!","L","]"},
-                {"F","[","^","^","!","!","L","]"}
+                ("f[^^L]").split(""),
+                ("f[&&L]").split("")
         });
         rulesets.put(2,rules);
 
-        asyncStochasticThree(server,world,x,y,z,length,radius,delta,iterations,axioms.get(ruleNo),rulesets.get(ruleNo),context.getSource().getPlayer());
+        asyncStochasticThree(server,world,x,y,z,length,radius,delta,iterations,axioms.get(ruleNo),rulesets.get(ruleNo),context.getSource().getPlayer(), decay);
 
         return 1;
     }

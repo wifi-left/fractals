@@ -150,7 +150,7 @@ public class TreeBuilder {
 
     }
 
-    public static void buildThree(String[] sentence, int x, int y, int z, float delta, float length, float radius, World world, ServerPlayerEntity player, int iteration, Block block) {
+    public static void buildThree(String[] sentence, int x, int y, int z, float delta, float length, float radius, World world, ServerPlayerEntity player, int iteration, Block block, Float decay) {
         Stack<Vector3f> posStack = new Stack<>();
         Stack<Vector3f> dirStack = new Stack<>();
         Stack<Float> rStack = new Stack<>();
@@ -210,7 +210,7 @@ public class TreeBuilder {
                 radius *= 0.75F;
 
             } else if (symbol.equals("@")) {
-                length *= 0.75F;
+                length *= decay;
 
             } else if (symbol.equals("[")) {
             } else if (symbol.equals("[")) {
@@ -228,7 +228,7 @@ public class TreeBuilder {
         }
     }
 
-    public static void buildThreeFractal(String[] sentence, int x, int y, int z, float delta, float length, float radius, World world, ServerPlayerEntity player, int iteration, Block block) {
+    public static void buildThreeFractal(String[] sentence, int x, int y, int z, float delta, float length, float radius, World world, ServerPlayerEntity player, int iteration, Block block, Float decay) {
         Stack<Vector3f> posStack = new Stack<>();
         Stack<Vector3f> dirStack = new Stack<>();
         Stack<Vector3f> upStack = new Stack<>();
@@ -249,15 +249,15 @@ public class TreeBuilder {
             direction = new Vector3f(0,1,0);
         }
 
-        System.out.println("Sentence: " + Arrays.toString(sentence));
-        System.out.println("Variables Initialized");
+//        System.out.println("Sentence: " + Arrays.toString(sentence));
+//        System.out.println("Variables Initialized");
 
         Vector3f up = new Vector3f(0, 0, 1);      // arbitrary initial up
         Vector3f right = direction.cross(up, new Vector3f()).normalize();
         upStack.push(new Vector3f(up));
         rightStack.push(new Vector3f(right));
 
-        System.out.println("Vectors Calculated");
+//        System.out.println("Vectors Calculated");
 
         for (int i=0;i<sentence.length;i++){
             prev = new Vector3f(pos);
@@ -270,7 +270,7 @@ public class TreeBuilder {
             if (symbol.equals("F") || symbol.equals("f")) {
 //                System.out.println("direction: " + direction);
                 pos.add(new Vector3f(direction).mul(length));
-                System.out.println("length: "+length);
+//                System.out.println("length: "+length);
 //                System.out.println("DRAWING BRANCH - " + (float) (i) / sentence.length * 100 + "%");
                 draw3DBranch(prev, pos, radius, world, block);
 
@@ -312,7 +312,7 @@ public class TreeBuilder {
                 radius *= 0.75F;
 
             } else if (symbol.equals("@")) {
-                length *= 0.85F;
+                length *= decay;
 
             } else if (symbol.equals("[")) {
                 posStack.push(new Vector3f(pos));
