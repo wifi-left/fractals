@@ -1,4 +1,4 @@
-package net.frosty.fractals;
+package net.frosty.fractals.world.tree.custom.FractalGeneration;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
@@ -11,13 +11,13 @@ import net.minecraft.world.World;
 import org.joml.Matrix3f;
 import org.joml.Vector3f;
 
-import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Stack;
-import java.util.UUID;
 
 public class TreeBuilder {
 
     public static void drawBranch(Vector3f start, Vector3f end, World world, Block block){
+
         Vector3f dir = new Vector3f(end).sub(start).normalize(0.5F);
         float distance = start.distance(end);
         Vector3f pos = new Vector3f(start);
@@ -334,4 +334,6 @@ public class TreeBuilder {
         }
         System.out.println("Build Complete");
     }
+
+
 }

@@ -15,6 +15,9 @@
 	"icon": "assets/fractals/icon.png",
 	"environment": "*",
 	"entrypoints": {
+		"fabric-datagen": [
+			"net.frosty.fractals.FractalsDataGenerator"
+		],
 		"main": [
 			"net.frosty.fractals.Fractals"
 		]

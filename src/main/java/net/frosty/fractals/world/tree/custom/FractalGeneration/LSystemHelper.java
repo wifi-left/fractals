@@ -1,7 +1,6 @@
-package net.frosty.fractals;
+package net.frosty.fractals.world.tree.custom.FractalGeneration;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 

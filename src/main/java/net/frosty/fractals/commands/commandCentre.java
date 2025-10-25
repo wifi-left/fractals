@@ -5,8 +5,9 @@ import com.mojang.brigadier.arguments.FloatArgumentType;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import net.frosty.fractals.LSystemHelper;
-import net.frosty.fractals.TreeBuilder;
+import net.frosty.fractals.world.tree.custom.FractalGeneration.FractalBuilder;
+import net.frosty.fractals.world.tree.custom.FractalGeneration.LSystemHelper;
+import net.frosty.fractals.world.tree.custom.FractalGeneration.TreeBuilder;
 import net.minecraft.block.Block;
 import net.minecraft.block.Blocks;
 import net.minecraft.command.CommandRegistryAccess;
@@ -169,48 +170,6 @@ public class commandCentre {
         return 1;
     }
 
-    private static void asyncThree(MinecraftServer server, World world, int x, int y, int z, float length, float radius, float delta, int iterations, String[] axiom, HashMap<String, String[]> rules, ServerPlayerEntity player, Block block, Float decay){
-        System.out.println("iterations: " + iterations);
-        System.out.println("delta: " + delta);
-
-        Runnable runIteration = new Runnable() {
-            int i = 0;
-            String[] sentenceHolder = axiom.clone();
-            @Override
-            public void run() {
-                System.out.println("i number: " + i);
-                if (i >= iterations) {
-                    System.out.println("Tree complete!");
-                    return;
-                }
-                int iteration = i + 1;
-//                System.out.println("ITERATION " + iteration + "...");
-                if (block.equals(Blocks.BLACK_CONCRETE)) {
-                    sentenceHolder = LSystemHelper.UpdateSentence(sentenceHolder, rules,false);
-                } else {
-                    sentenceHolder = LSystemHelper.UpdateSentence(sentenceHolder, rules, false);
-                }
-                System.out.println("BUILDING iteration " + iteration + "...");
-                System.out.println(block);
-//                System.out.println(Arrays.toString(sentenceHolder));
-                if (block.equals(Blocks.BLACK_CONCRETE) && iteration==iterations) {
-                    TreeBuilder.buildThreeFractal(sentenceHolder, x, y, z, delta, length, radius, world, player, iteration, block, decay);
-                } else if (!block.equals(Blocks.BLACK_CONCRETE) && iteration==iterations){
-//                    System.out.println('e');
-                    TreeBuilder.buildThreeFractal(sentenceHolder, x, y, z, delta, length, radius, world, player, iteration, block, decay);
-//                    System.out.println("built layer");
-                }
-
-
-                i++;
-                CompletableFuture.delayedExecutor(1, TimeUnit.SECONDS)
-                        .execute(this);
-            }
-        };
-
-        CompletableFuture.runAsync(runIteration);
-
-    }
 
     private static int threeTree(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
         int x = IntegerArgumentType.getInteger(context,"x");
@@ -267,41 +226,10 @@ public class commandCentre {
         rules.put("S", ("F[^^L]").split(""));
         rulesets.put(4,rules);
 
-        asyncThree(server,world,x,y,z,length,radius,deltas.get(ruleNo),iterations,axioms.get(ruleNo),rulesets.get(ruleNo),context.getSource().getPlayer(),blocks.get(ruleNo),decays.get(ruleNo));
-
+        FractalBuilder.asyncThree(server,world,x,y,z,length,radius,deltas.get(ruleNo),iterations,axioms.get(ruleNo),rulesets.get(ruleNo),context.getSource().getPlayer(),blocks.get(ruleNo),decays.get(ruleNo));
 
 
         return 1;
-    }
-
-    private static void asyncStochasticThree(MinecraftServer server, World world, int x, int y, int z, float length, float radius, float delta, int iterations, String[] axiom, HashMap<String, String[][]> rules, ServerPlayerEntity player, float decay){
-
-        Runnable runIteration = new Runnable() {
-            int i = 0;
-            String[] sentenceHolder = axiom.clone();
-            @Override
-            public void run() {
-                if (i >= iterations) {
-                    System.out.println("Tree complete!");
-                    return;
-                }
-                int iteration = i + 1;
-//                System.out.println("ITERATION " + iteration + "...");
-                sentenceHolder = LSystemHelper.UpdateStochasticSentence(sentenceHolder, rules, false);
-
-//                System.out.println("BUILDING iteration " + iteration + "...");
-                if (iteration==iterations) {
-                    TreeBuilder.buildThreeFractal(sentenceHolder, x, y, z, delta, length, radius, world, player, iteration, Blocks.OAK_WOOD, decay);
-                }
-
-                i++;
-                CompletableFuture.delayedExecutor(0, TimeUnit.SECONDS)
-                        .execute(this);
-            }
-        };
-
-        CompletableFuture.runAsync(runIteration);
-
     }
 
     private static int stochasticTree(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
@@ -357,7 +285,7 @@ public class commandCentre {
         });
         rulesets.put(2,rules);
 
-        asyncStochasticThree(server,world,x,y,z,length,radius,delta,iterations,axioms.get(ruleNo),rulesets.get(ruleNo),context.getSource().getPlayer(), decay);
+        FractalBuilder.asyncStochasticThree(server,world,x,y,z,length,radius,delta,iterations,axioms.get(ruleNo),rulesets.get(ruleNo),context.getSource().getPlayer(), decay);
 
         return 1;
     }
