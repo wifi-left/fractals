@@ -9,6 +9,7 @@ import net.frosty.fractals.world.tree.custom.FractalGeneration.TreeBuilder;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.random.Random;
 import net.minecraft.world.TestableWorld;
 import net.minecraft.world.gen.feature.TreeFeatureConfig;
@@ -18,6 +19,7 @@ import net.minecraft.world.gen.trunk.TrunkPlacer;
 import net.minecraft.world.gen.trunk.TrunkPlacerType;
 import org.spongepowered.include.com.google.common.collect.ImmutableList;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -68,22 +70,40 @@ public class FractalTrunkPlacer extends TrunkPlacer {
         });
 
         String[] sentenceHolder = axiom.clone();
-        int generations = 8;
+        int generations = 9;
         for(int i=0;i<generations;i++){
             sentenceHolder = LSystemHelper.UpdateStochasticSentence(sentenceHolder, rules, false);
         }
 
-        HashSet<BlockPos>[] context = LightTreeBuilder.buildLightTree(sentenceHolder, startPos, 22.5f, 6, 1.5f,0.85f);
+        HashSet<BlockPos>[] context = LightTreeBuilder.buildLightTree(sentenceHolder, startPos, 22.5f, 10, 1.2f,0.85f);
         HashSet<BlockPos> toEdit = context[0];
         HashSet<BlockPos> toLeaf = context[1];
 
         // Iterate until the trunk height limit and place two blocks using the getAndSetState method from TrunkPlacer
         for (BlockPos bp: toEdit) {
-            this.getAndSetState(world, replacer, random, bp, config);
+//            boolean pass = this.getAndSetState(world, replacer, random, bp, config);
+//            if (pass==false){
+            List<BlockPos> currentDefer = Fractals.deferredLogs.get(new ChunkPos(bp));
+            if (currentDefer==null){
+                Fractals.deferredLogs.put(new ChunkPos(bp), new ArrayList<>(List.of(bp)));
+            }
+            else{
+                currentDefer.add(bp);
+                Fractals.deferredLogs.put(new ChunkPos(bp), currentDefer);
+//            }
+            }
         }
 
         for (BlockPos bp: toLeaf) {
-            this.getAndSetState(world, replacer, random, bp, leafConfig);
+//            this.getAndSetState(world, replacer, random, bp, leafConfig);
+            List<BlockPos> currentDefer = Fractals.deferredLeaves.get(new ChunkPos(bp));
+            if (currentDefer==null){
+                Fractals.deferredLeaves.put(new ChunkPos(bp), new ArrayList<>(List.of(bp)));
+            }
+            else{
+                currentDefer.add(bp);
+                Fractals.deferredLeaves.put(new ChunkPos(bp), currentDefer);
+            }
         }
 
         // We create two TreeNodes - one for the first trunk, and the other for the second

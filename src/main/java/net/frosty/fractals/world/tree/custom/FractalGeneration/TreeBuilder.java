@@ -122,7 +122,7 @@ public class TreeBuilder {
             float sinT = (float) Math.sin(theta);
             Vector3f offset = new Vector3f(dir).mul(cosT*radius).add(new Vector3f(normal).mul(sinT*radius*0.5F));
             Vector3f ovalPoint = new Vector3f(centre).add(offset);
-            drawBranch(centre,ovalPoint,world,Blocks.OAK_LEAVES); //make this take in an argument of OAK_LEAVES
+            drawBranch(centre,ovalPoint,world,Blocks.OAK_LEAVES);
         }
 
     }
@@ -144,7 +144,7 @@ public class TreeBuilder {
 
                 Vector3f offset = new Vector3f(dir).mul(x).add(new Vector3f(normal).mul(y)).add(new Vector3f(binormal).mul(z));
                 Vector3f spherePoint = new Vector3f(centre).add(offset);
-                drawBranch(centre, spherePoint, world, Blocks.OAK_LEAVES); //make this take in an argument of OAK_LEAVES
+                drawBranch(centre, spherePoint, world, Blocks.OAK_LEAVES);
             }
         }
 
