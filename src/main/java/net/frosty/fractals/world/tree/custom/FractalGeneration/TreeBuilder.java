@@ -182,7 +182,7 @@ public class TreeBuilder {
                 draw3DBranch(prev, pos, radius, world, block);
 
             } else if (symbol.equals("L")){
-                drawLeaf(pos,direction,4F,world);
+                drawLeaf(pos,direction,5F,world);
 //                drawSphereLeaf(pos,direction,4F,world);
 
             } else if (symbol.equals("-")) {

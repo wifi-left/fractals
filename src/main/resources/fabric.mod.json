@@ -20,6 +20,9 @@
 		],
 		"main": [
 			"net.frosty.fractals.Fractals"
+		],
+		"terrablender": [
+			"net.frosty.fractals.world.biome.ModTerrablenderAPI"
 		]
 	},
 	"mixins": [

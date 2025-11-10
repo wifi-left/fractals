@@ -55,14 +55,14 @@ public class FractalTrunkPlacer extends TrunkPlacer {
         HashMap<String, String[][]> rules = new HashMap<>();
         String[] axiom = new String[]{"B"};
         rules.put("A", new String[][]{
-                ("F[^&@FL!A][@F!A]").split(""),
-                ("F[^>>>>>'&@FL!A][@F!A]").split(""),
-                ("F[^>>>>>>>>>>>>&@FL!A][@F!A]").split(""),
-                ("F[&@FL!A]>>>>>'[&@FL!A]>>>>>>>'[&@FL!A]").split(""),
-                ("F[&@FL!A]>>>>>'[&@FL!A]>>>>>>>'[&@FL!A]").split("")
+                ("F![^&@FLA][@FA]").split(""),
+                ("F![^>>>>'&@FLA][@FA]").split(""),
+                ("F![^>>>>>>>>>&@FLA][@FA]").split(""),
+                ("F![&@FLA]>>>>'[&@FLA]>>>>>'[&@FLA]").split(""),
+                ("F![&@FLA]>>>>'[&@FLA]>>>>>'[&@FLA]").split("")
         });
         rules.put("B", new String[][]{
-                {"f","[","!","@","f","A","]"}
+                {"f","[","!","@","A","]"}
         });
         rules.put("F", new String[][]{
                 ("f[^^L]").split(""),
@@ -74,8 +74,9 @@ public class FractalTrunkPlacer extends TrunkPlacer {
         for(int i=0;i<generations;i++){
             sentenceHolder = LSystemHelper.UpdateStochasticSentence(sentenceHolder, rules, false);
         }
-
-        HashSet<BlockPos>[] context = LightTreeBuilder.buildLightTree(sentenceHolder, startPos, 22.5f, 10, 1.2f,0.85f);
+        double randomRadius = 2 + Math.random() * (3-2);
+        double randomLength = 10 + Math.random() * (15-10);
+        HashSet<BlockPos>[] context = LightTreeBuilder.buildLightTree(sentenceHolder, startPos, 26f, (float) randomLength, (float) randomRadius,0.85f, 0.75f, 5F);
         HashSet<BlockPos> toEdit = context[0];
         HashSet<BlockPos> toLeaf = context[1];
 

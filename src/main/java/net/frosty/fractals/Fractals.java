@@ -45,25 +45,25 @@ public class Fractals implements ModInitializer {
 	private void onServerTick(MinecraftServer server){
 		ServerWorld world = server.getOverworld();
 
-		Iterator<Map.Entry<ChunkPos, List<BlockPos>>> it = deferredLogs.entrySet().iterator();
-		while(it.hasNext()){
-			Map.Entry<ChunkPos, List<BlockPos>> entry = it.next();
-			ChunkPos chunkPos = entry.getKey();
-			if (world.isChunkLoaded(chunkPos.x,chunkPos.z)){
-				for (BlockPos bp : new ArrayList<>(entry.getValue())){
-					world.setBlockState(bp, Blocks.OAK_WOOD.getDefaultState());
-				}
-				it.remove();
-			}
-		}
-
-		it = deferredLeaves.entrySet().iterator();
+		Iterator<Map.Entry<ChunkPos, List<BlockPos>>> it = deferredLeaves.entrySet().iterator();
 		while(it.hasNext()){
 			Map.Entry<ChunkPos, List<BlockPos>> entry = it.next();
 			ChunkPos chunkPos = entry.getKey();
 			if (world.isChunkLoaded(chunkPos.x,chunkPos.z)){
 				for (BlockPos bp : new ArrayList<>(entry.getValue())){
 					world.setBlockState(bp, ModBlocks.LIGHT_LEAVES.getDefaultState().with(Properties.PERSISTENT,true));
+				}
+				it.remove();
+			}
+		}
+
+		it = deferredLogs.entrySet().iterator();
+		while(it.hasNext()){
+			Map.Entry<ChunkPos, List<BlockPos>> entry = it.next();
+			ChunkPos chunkPos = entry.getKey();
+			if (world.isChunkLoaded(chunkPos.x,chunkPos.z)){
+				for (BlockPos bp : new ArrayList<>(entry.getValue())){
+					world.setBlockState(bp, Blocks.OAK_WOOD.getDefaultState());
 				}
 				it.remove();
 			}
