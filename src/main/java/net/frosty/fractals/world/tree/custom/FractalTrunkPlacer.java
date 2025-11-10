@@ -87,8 +87,7 @@ public class FractalTrunkPlacer extends TrunkPlacer {
                 ("f[&&L]").split("")
         }); //root base rule
         rules.put("P", new String[][]{
-                ("[>&&f@!R]>>>>[&&f@!R]>>>>>[&&f@!R]").split(""),
-                ("[>>>&&f@!R][<<<<&&f@!R]").split(""),
+                ("[>&.f@!R]>>>>[&.f@!R]>>>>>[&.f@!R]").split(""),
         }); //root rules
         rules.put("R", new String[][]{
                 ("[>..f@!R][>>>>..f@!R][<<..f@!R]").split(""),

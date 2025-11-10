@@ -295,7 +295,7 @@ public class commandCentre {
                 ("F![&@FLA]>>>>'[&@FLA]>>>>>'[&@FLA]").split("")
         }); //rules for base
         rules.put("B", new String[][]{
-                ("[!!|P]f[!@A]").split("")
+                ("[!!@|P]f[!@A]").split("")
         }); //rules for placing leaves
         rules.put("F", new String[][]{
                 ("f[^^L]").split(""),
@@ -306,8 +306,7 @@ public class commandCentre {
                 ("f[&&L]").split("")
         }); //root base rules
         rules.put("P", new String[][]{
-                ("[>&&f@!R][>>>>&&f@!R][<<&&f@!R]").split(""),
-                ("[>>>&&f@!R][<<&&f@!R]").split(""),
+                ("[>&.f@!R]>>>>[&.f@!R]>>>>>[&.f@!R]").split(""),
         }); //root rules
         rules.put("R", new String[][]{
                 ("[>..f@!R][>>>>..f@!R][<<..f@!R]").split(""),
