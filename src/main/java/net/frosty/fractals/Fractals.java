@@ -30,6 +30,7 @@ public class Fractals implements ModInitializer {
 	public static final TrunkPlacerType<FractalTrunkPlacer> FRACTAL_TRUNK_PLACER = TrunkPlacerTypeInvoker.callRegister("fractals:fractal_trunk_placer", FractalTrunkPlacer.CODEC);
 	public static Map<ChunkPos, List<BlockPos>> deferredLogs = new ConcurrentHashMap<>();
 	public static Map<ChunkPos, List<BlockPos>> deferredLeaves =  new ConcurrentHashMap<>();
+	public static Map<ChunkPos, BlockPos> minDistanceBuffer = new ConcurrentHashMap<>();
 
 	@Override
 	public void onInitialize() {
@@ -66,6 +67,7 @@ public class Fractals implements ModInitializer {
 					world.setBlockState(bp, Blocks.OAK_WOOD.getDefaultState());
 				}
 				it.remove();
+				minDistanceBuffer.remove(entry.getKey());
 			}
 		}
 

@@ -159,6 +159,15 @@ public class LightTreeBuilder {
                 right.mul(rot);
                 up.mul(rot);
 
+            } else if (symbol.equals("|")) {
+                direction.rotateX((float) Math.PI);
+                up.rotateX((float) Math.PI);
+
+            } else if (symbol.equals(".")) {
+                Matrix3f rot = new Matrix3f().rotation(-delta/3, right.x, right.y, right.z);
+                direction.mul(rot);
+                up.mul(rot);
+
             } else if (symbol.equals("!")) {
                 radius *= trunkDecay;
 

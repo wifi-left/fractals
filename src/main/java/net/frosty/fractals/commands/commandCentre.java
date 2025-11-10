@@ -293,13 +293,25 @@ public class commandCentre {
                 ("F![^>>>>>>>>>&@FLA][@FA]").split(""),
                 ("F![&@FLA]>>>>'[&@FLA]>>>>>'[&@FLA]").split(""),
                 ("F![&@FLA]>>>>'[&@FLA]>>>>>'[&@FLA]").split("")
-        });
+        }); //rules for base
         rules.put("B", new String[][]{
-                {"f","[","!","@","A","]"}
-        });
+                ("[!!|P]f[!@A]").split("")
+        }); //rules for placing leaves
         rules.put("F", new String[][]{
                 ("f[^^L]").split(""),
                 ("f[&&L]").split("")
+        }); //rules for branches, leaf spawning
+        rules.put("F", new String[][]{
+                ("f[^^L]").split(""),
+                ("f[&&L]").split("")
+        }); //root base rules
+        rules.put("P", new String[][]{
+                ("[>&&f@!R][>>>>&&f@!R][<<&&f@!R]").split(""),
+                ("[>>>&&f@!R][<<&&f@!R]").split(""),
+        }); //root rules
+        rules.put("R", new String[][]{
+                ("[>..f@!R][>>>>..f@!R][<<..f@!R]").split(""),
+                ("[>>>..f@!R][<<..f@!R]").split(""),
         });
         rulesets.put(3,rules);
 

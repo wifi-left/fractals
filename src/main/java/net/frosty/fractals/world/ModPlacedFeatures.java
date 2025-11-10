@@ -21,7 +21,7 @@ public class  ModPlacedFeatures {
 
         register(context, FRACTAL_OAK_PLACED, configuredFeatures.getOrThrow(ModConfiguredFeatures.FRACTAL_OAK),
                 VegetationPlacedFeatures.treeModifiersWithWouldSurvive(
-                        PlacedFeatures.createCountExtraModifier(0,0.05f,1), Blocks.OAK_SAPLING));
+                        PlacedFeatures.createCountExtraModifier(0,0.0625f,1), Blocks.OAK_SAPLING));
     }
 
     public static RegistryKey<PlacedFeature> registerKey(String name){
