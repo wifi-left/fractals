@@ -115,19 +115,14 @@ public class LightTreeBuilder {
             up.normalize();
             right.normalize();
             String symbol = sentence[i];
-//            System.out.println(symbol + " sada: " + i);
             if (symbol.equals("F") || symbol.equals("f")) {
-//                System.out.println("direction: " + direction);
                 pos.add(new Vector3f(direction).mul(length));
-//                System.out.println("length: "+length);
-//                System.out.println("DRAWING BRANCH - " + (float) (i) / sentence.length * 100 + "%");
                 HashSet<BlockPos> toAddToEdit = drawLight3DBranch(prev, pos, radius);
                 toEdit.addAll(toAddToEdit);
 
             } else if (symbol.equals("L")) {
                 HashSet<BlockPos> addToLeaf = drawLightLeaf(pos, direction,leafLength);
                 toLeaf.addAll(addToLeaf);
-//                drawSphereLeaf(pos,direction,4F,world);
 
             } else if (symbol.equals("-")) {
                 Matrix3f rot = new Matrix3f().rotation(-delta, up.x, up.y, up.z);
@@ -162,18 +157,27 @@ public class LightTreeBuilder {
             } else if (symbol.equals("|")) {
                 direction.rotateX((float) Math.PI);
                 up.rotateX((float) Math.PI);
-
+            /*
             } else if (symbol.equals(".")) {
-                Matrix3f rot = new Matrix3f().rotation(-delta/3, right.x, right.y, right.z);
+
+                int randomBias=-1;
+                if (Math.random()<0.8){randomBias=1;}
+
+                Matrix3f rot = new Matrix3f().rotation(randomBias*delta/6, right.x, right.y, right.z);
                 direction.mul(rot);
                 up.mul(rot);
+
+             */
 
             } else if (symbol.equals("!")) {
                 radius *= trunkDecay;
 
             } else if (symbol.equals("@")) {
                 length *= decay;
-
+            /*
+            } else if (symbol.equals("*")) {
+                length *= (float) (decay*1.06);
+             */
             } else if (symbol.equals("[")) {
                 posStack.push(new Vector3f(pos));
                 dirStack.push(new Vector3f(direction));

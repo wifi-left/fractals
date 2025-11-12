@@ -1,5 +1,6 @@
 package net.frosty.fractals.world.tree.custom.FractalGeneration;
 
+import net.frosty.fractals.block.ModBlocks;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
@@ -122,7 +123,7 @@ public class TreeBuilder {
             float sinT = (float) Math.sin(theta);
             Vector3f offset = new Vector3f(dir).mul(cosT*radius).add(new Vector3f(normal).mul(sinT*radius*0.5F));
             Vector3f ovalPoint = new Vector3f(centre).add(offset);
-            drawBranch(centre,ovalPoint,world,Blocks.OAK_LEAVES);
+            drawBranch(centre,ovalPoint,world, ModBlocks.LIGHT_LEAVES);
         }
 
     }
@@ -266,17 +267,12 @@ public class TreeBuilder {
             right.normalize();
             String symbol = sentence[i];
             player.sendMessage(Text.of("Iteration " + iteration + ": " + (int) ((float) (i) / sentence.length * 100) + "% complete"),true);
-//            System.out.println(symbol + " sada: " + i);
             if (symbol.equals("F") || symbol.equals("f")) {
-//                System.out.println("direction: " + direction);
                 pos.add(new Vector3f(direction).mul(length));
-//                System.out.println("length: "+length);
-//                System.out.println("DRAWING BRANCH - " + (float) (i) / sentence.length * 100 + "%");
                 draw3DBranch(prev, pos, radius, world, block);
 
             } else if (symbol.equals("L")){
                 drawLeaf(pos,direction,4F,world);
-//                drawSphereLeaf(pos,direction,4F,world);
 
             } else if (symbol.equals("-")) {
                 Matrix3f rot = new Matrix3f().rotation(-delta, up.x, up.y, up.z);
@@ -313,7 +309,11 @@ public class TreeBuilder {
                 up.rotateX((float) Math.PI);
 
             } else if (symbol.equals(".")) {
-                Matrix3f rot = new Matrix3f().rotation(-delta/3, right.x, right.y, right.z);
+
+                int randomBias=-1;
+                if (Math.random()<0.8){randomBias=1;}
+
+                Matrix3f rot = new Matrix3f().rotation(randomBias*delta/6, right.x, right.y, right.z);
                 direction.mul(rot);
                 up.mul(rot);
 
@@ -322,6 +322,9 @@ public class TreeBuilder {
 
             } else if (symbol.equals("@")) {
                 length *= decay;
+
+            } else if (symbol.equals("*")) {
+                length *= (float) (decay*1.06);
 
             } else if (symbol.equals("[")) {
                 posStack.push(new Vector3f(pos));

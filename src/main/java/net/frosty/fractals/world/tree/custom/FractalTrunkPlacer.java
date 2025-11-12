@@ -32,7 +32,7 @@ public class FractalTrunkPlacer extends TrunkPlacer {
         super(baseHeight, firstRandomHeight, secondRandomHeight);
     }
 
-    public int minSeparation = 90;
+    public int minSeparation = 150;
 
     @Override
     protected TrunkPlacerType<?> getType() {
@@ -69,14 +69,15 @@ public class FractalTrunkPlacer extends TrunkPlacer {
         String[] axiom = new String[]{"B"};
         //rules for anchor nodes
         rules.put("A", new String[][]{
-                ("F!>>>>[^&@FLA][@FA]").split(""),
-                ("F!>>>[^>>>>'&@FLA][@FA]").split(""),
-                ("F!>>[^>>>>>>>>>&@FLA][@FA]").split(""),
+                ("F![^&@FLA][@FA]").split(""),
+                ("F![^>>>>'&@FLA][@FA]").split(""),
+                ("F![^>>>>>>>>>&@FLA][@FA]").split(""),
                 ("F![&@FLA]>>>>'[&@FLA]>>>>>'[&@FLA]").split(""),
                 ("F![&@FLA]>>>>'[&@FLA]>>>>>'[&@FLA]").split("")
         }); //rules for base
         rules.put("B", new String[][]{
-                ("[!!@|P]f[!@A]").split("")
+                ("f[!@A]").split("")
+//                ("[!|P]f[!@A]").split("") //version with roots
         }); //rules for placing leaves
         rules.put("F", new String[][]{
                 ("f[^^L]").split(""),
@@ -85,23 +86,29 @@ public class FractalTrunkPlacer extends TrunkPlacer {
         rules.put("F", new String[][]{
                 ("f[^^L]").split(""),
                 ("f[&&L]").split("")
-        }); //root base rule
+        }); //root base rules
+        /*
         rules.put("P", new String[][]{
-                ("[>&.f@!R]>>>>[&.f@!R]>>>>>[&.f@!R]").split(""),
+                ("[>>>>&&&f*!!R]>>>>>[&&&f*!!R]>>>>>[&&&f*!!R]").split(""),
+                (">>[>&&&f*!!R]>>>>[&&&f*!!R]>>>>>[&&&f*!!R]").split(""),
+                ("[>&&&f*!!R]>>>>[&&&f*!!R]>>>>>[&&&f*!!R]").split(""),
         }); //root rules
         rules.put("R", new String[][]{
-                ("[>..f@!R][>>>>..f@!R][<<..f@!R]").split(""),
-                ("[>>>..f@!R][<<..f@!R]").split(""),
+                ("[+.f*!R][.f*!R][-.f*!R]").split(""),
+                ("[+.f*!R][-.f*!R]").split(""),
         });
+         */
 
         String[] sentenceHolder = axiom.clone();
-        int generations = 9;
+        int generations = 10;
         for(int i=0;i<generations;i++){
             sentenceHolder = LSystemHelper.UpdateStochasticSentence(sentenceHolder, rules, false);
         }
-        double randomRadius = 2.5 + Math.random() * (3.5-2.5);
-        double randomLength = 10 + Math.random() * (15-10);
-        HashSet<BlockPos>[] context = LightTreeBuilder.buildLightTree(sentenceHolder, startPos, 26f, (float) randomLength, (float) randomRadius,0.85f, 0.75f, 5F);
+//        double randomRadius = 2.5 + Math.random() * (3.5-2.5);
+//        double randomLength = 10 + Math.random() * (15-10);
+        double randomRadius = 5 + Math.random() * (8-5);
+        double randomLength = 15 + Math.random() * (20-15);
+        HashSet<BlockPos>[] context = LightTreeBuilder.buildLightTree(sentenceHolder, new BlockPos(startPos.getX(),startPos.getY()-8,startPos.getZ()), 26f, (float) randomLength, (float) randomRadius,0.85f, 0.75f, 5F);
         HashSet<BlockPos> toEdit = context[0];
         HashSet<BlockPos> toLeaf = context[1];
 
