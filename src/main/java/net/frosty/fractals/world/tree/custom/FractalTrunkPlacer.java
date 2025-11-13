@@ -32,7 +32,7 @@ public class FractalTrunkPlacer extends TrunkPlacer {
         super(baseHeight, firstRandomHeight, secondRandomHeight);
     }
 
-    public int minSeparation = 150;
+    public int minSeparation = 200;
 
     @Override
     protected TrunkPlacerType<?> getType() {
