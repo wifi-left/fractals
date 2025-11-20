@@ -67,7 +67,7 @@ public class Fractals implements ModInitializer {
 					world.setBlockState(bp, Blocks.OAK_WOOD.getDefaultState());
 				}
 				it.remove();
-				minDistanceBuffer.remove(entry.getKey());
+//				minDistanceBuffer.remove(entry.getKey());
 			}
 		}
 

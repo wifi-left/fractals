@@ -119,7 +119,7 @@ public class FractalTrunkPlacer extends TrunkPlacer {
             }
             else{
                 currentDefer.add(bp);
-                Fractals.deferredLogs.put(new ChunkPos(bp), currentDefer);
+                Fractals.deferredLogs.put(new ChunkPos(bp), new ArrayList<>(currentDefer));
             }
         }
 
@@ -130,7 +130,7 @@ public class FractalTrunkPlacer extends TrunkPlacer {
             }
             else{
                 currentDefer.add(bp);
-                Fractals.deferredLeaves.put(new ChunkPos(bp), currentDefer);
+                Fractals.deferredLeaves.put(new ChunkPos(bp), new ArrayList<>(currentDefer));
             }
         }
 
