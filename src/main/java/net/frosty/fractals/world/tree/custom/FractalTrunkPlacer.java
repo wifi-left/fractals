@@ -9,6 +9,7 @@ import net.frosty.fractals.world.tree.custom.FractalGeneration.TreeBuilder;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.random.Random;
 import net.minecraft.world.TestableWorld;
 import net.minecraft.world.gen.feature.TreeFeatureConfig;
@@ -18,9 +19,7 @@ import net.minecraft.world.gen.trunk.TrunkPlacer;
 import net.minecraft.world.gen.trunk.TrunkPlacerType;
 import org.spongepowered.include.com.google.common.collect.ImmutableList;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
+import java.util.*;
 import java.util.function.BiConsumer;
 
 public class FractalTrunkPlacer extends TrunkPlacer {
@@ -33,6 +32,8 @@ public class FractalTrunkPlacer extends TrunkPlacer {
         super(baseHeight, firstRandomHeight, secondRandomHeight);
     }
 
+    public int minSeparation = 200;
+
     @Override
     protected TrunkPlacerType<?> getType() {
         return Fractals.FRACTAL_TRUNK_PLACER;
@@ -41,49 +42,96 @@ public class FractalTrunkPlacer extends TrunkPlacer {
     @Override
     public List<FoliagePlacer.TreeNode> generate(TestableWorld world, BiConsumer<BlockPos, BlockState> replacer, Random random, int height, BlockPos startPos, TreeFeatureConfig config) {
 
-        TreeFeatureConfig leafConfig = new TreeFeatureConfig.Builder(
-                BlockStateProvider.of(Blocks.OAK_LEAVES),config.trunkPlacer,
-                config.foliageProvider,config.foliagePlacer,
-                config.minimumSize
-        ).build();
+        //check if tree is too close
+        Iterator<Map.Entry<ChunkPos, BlockPos>> it = Fractals.minDistanceBuffer.entrySet().iterator();
+        boolean goodSeparation = true;
+        while(it.hasNext()) {
+            Map.Entry<ChunkPos, BlockPos> entry = it.next();
+            double distance = Math.sqrt(startPos.getSquaredDistance(entry.getValue()));
+            if (distance < minSeparation){
+                goodSeparation = false;
+            }
+        }
+
+        //dont generate tree if too close
+        if (!goodSeparation){
+            System.out.println("prevented spawn at: " + startPos);
+            return ImmutableList.of(new FoliagePlacer.TreeNode(startPos.up(height), 0, false),
+                    new FoliagePlacer.TreeNode(startPos.east().north().up(height), 0, false));
+        }
+
+        Fractals.minDistanceBuffer.put(new ChunkPos(startPos),startPos);
 
         // Set the ground beneath the trunk to dirt
         setToDirt(world, replacer, random, startPos.down(), config);
 
         HashMap<String, String[][]> rules = new HashMap<>();
         String[] axiom = new String[]{"B"};
+        //rules for anchor nodes
         rules.put("A", new String[][]{
-                ("F[^&@FL!A][@F!A]").split(""),
-                ("F[^>>>>>'&@FL!A][@F!A]").split(""),
-                ("F[^>>>>>>>>>>>>&@FL!A][@F!A]").split(""),
-                ("F[&@FL!A]>>>>>'[&@FL!A]>>>>>>>'[&@FL!A]").split(""),
-                ("F[&@FL!A]>>>>>'[&@FL!A]>>>>>>>'[&@FL!A]").split("")
-        });
+                ("F![^&@FLA][@FA]").split(""),
+                ("F![^>>>>'&@FLA][@FA]").split(""),
+                ("F![^>>>>>>>>>&@FLA][@FA]").split(""),
+                ("F![&@FLA]>>>>'[&@FLA]>>>>>'[&@FLA]").split(""),
+                ("F![&@FLA]>>>>'[&@FLA]>>>>>'[&@FLA]").split("")
+        }); //rules for base
         rules.put("B", new String[][]{
-                {"f","[","!","@","f","A","]"}
-        });
+                ("f[!@A]").split("")
+//                ("[!|P]f[!@A]").split("") //version with roots
+        }); //rules for placing leaves
         rules.put("F", new String[][]{
                 ("f[^^L]").split(""),
                 ("f[&&L]").split("")
+        }); //rules for branches, leaf spawning
+        rules.put("F", new String[][]{
+                ("f[^^L]").split(""),
+                ("f[&&L]").split("")
+        }); //root base rules
+        /*
+        rules.put("P", new String[][]{
+                ("[>>>>&&&f*!!R]>>>>>[&&&f*!!R]>>>>>[&&&f*!!R]").split(""),
+                (">>[>&&&f*!!R]>>>>[&&&f*!!R]>>>>>[&&&f*!!R]").split(""),
+                ("[>&&&f*!!R]>>>>[&&&f*!!R]>>>>>[&&&f*!!R]").split(""),
+        }); //root rules
+        rules.put("R", new String[][]{
+                ("[+.f*!R][.f*!R][-.f*!R]").split(""),
+                ("[+.f*!R][-.f*!R]").split(""),
         });
+         */
 
         String[] sentenceHolder = axiom.clone();
-        int generations = 8;
+        int generations = 10;
         for(int i=0;i<generations;i++){
             sentenceHolder = LSystemHelper.UpdateStochasticSentence(sentenceHolder, rules, false);
         }
-
-        HashSet<BlockPos>[] context = LightTreeBuilder.buildLightTree(sentenceHolder, startPos, 22.5f, 6, 1.5f,0.85f);
+//        double randomRadius = 2.5 + Math.random() * (3.5-2.5);
+//        double randomLength = 10 + Math.random() * (15-10);
+        double randomRadius = 5 + Math.random() * (8-5);
+        double randomLength = 15 + Math.random() * (20-15);
+        HashSet<BlockPos>[] context = LightTreeBuilder.buildLightTree(sentenceHolder, new BlockPos(startPos.getX(),startPos.getY()-8,startPos.getZ()), 26f, (float) randomLength, (float) randomRadius,0.85f, 0.75f, 5F);
         HashSet<BlockPos> toEdit = context[0];
         HashSet<BlockPos> toLeaf = context[1];
 
-        // Iterate until the trunk height limit and place two blocks using the getAndSetState method from TrunkPlacer
         for (BlockPos bp: toEdit) {
-            this.getAndSetState(world, replacer, random, bp, config);
+            List<BlockPos> currentDefer = Fractals.deferredLogs.get(new ChunkPos(bp));
+            if (currentDefer==null){
+                Fractals.deferredLogs.put(new ChunkPos(bp), new ArrayList<>(List.of(bp)));
+            }
+            else{
+                currentDefer.add(bp);
+                Fractals.deferredLogs.put(new ChunkPos(bp), new ArrayList<>(currentDefer));
+            }
         }
 
         for (BlockPos bp: toLeaf) {
-            this.getAndSetState(world, replacer, random, bp, leafConfig);
+            List<BlockPos> currentDefer = Fractals.deferredLeaves.get(new ChunkPos(bp));
+            if (currentDefer==null){
+                Fractals.deferredLeaves.put(new ChunkPos(bp), new ArrayList<>(List.of(bp)));
+            }
+            else{
+                currentDefer.add(bp);
+                Fractals.deferredLeaves.put(new ChunkPos(bp), new ArrayList<>(currentDefer));
+            }
         }
 
         // We create two TreeNodes - one for the first trunk, and the other for the second

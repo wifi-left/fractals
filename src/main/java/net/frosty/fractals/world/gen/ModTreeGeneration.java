@@ -11,24 +11,24 @@ import net.minecraft.world.gen.feature.VegetationPlacedFeatures;
 
 public class ModTreeGeneration {
     public static void generateTrees(){
-        BiomeModifications.addFeature(BiomeSelectors.includeByKey(BiomeKeys.PLAINS, BiomeKeys.MEADOW),
-                GenerationStep.Feature.VEGETAL_DECORATION, ModPlacedFeatures.FRACTAL_OAK_PLACED);
-
-        BiomeModifications.create(Identifier.of("fractals","remove_vanilla_trees"))
-                .add(
-                        ModificationPhase.REMOVALS,
-                        BiomeSelectors.includeByKey(BiomeKeys.PLAINS, BiomeKeys.MEADOW),
-                        context -> {
-                            context.getGenerationSettings().removeFeature(
-                                    GenerationStep.Feature.VEGETAL_DECORATION,
-                                    VegetationPlacedFeatures.TREES_PLAINS
-                            );
-                            context.getGenerationSettings().removeFeature(
-                                    GenerationStep.Feature.VEGETAL_DECORATION,
-                                    VegetationPlacedFeatures.TREES_MEADOW
-                            );
-                        }
-                );
+//        BiomeModifications.addFeature(BiomeSelectors.includeByKey(BiomeKeys.PLAINS, BiomeKeys.MEADOW),
+//                GenerationStep.Feature.VEGETAL_DECORATION, ModPlacedFeatures.FRACTAL_OAK_PLACED);
+//
+//        BiomeModifications.create(Identifier.of("fractals","remove_vanilla_trees"))
+//                .add(
+//                        ModificationPhase.REMOVALS,
+//                        BiomeSelectors.includeByKey(BiomeKeys.PLAINS, BiomeKeys.MEADOW),
+//                        context -> {
+//                            context.getGenerationSettings().removeFeature(
+//                                    GenerationStep.Feature.VEGETAL_DECORATION,
+//                                    VegetationPlacedFeatures.TREES_PLAINS
+//                            );
+//                            context.getGenerationSettings().removeFeature(
+//                                    GenerationStep.Feature.VEGETAL_DECORATION,
+//                                    VegetationPlacedFeatures.TREES_MEADOW
+//                            );
+//                        }
+//                );
 
     }
 }

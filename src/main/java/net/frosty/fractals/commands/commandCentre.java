@@ -277,13 +277,44 @@ public class commandCentre {
                 ("F[&@FL!A]>>>>>'[&@FL!A]>>>>>>>'[&@FL!A]").split("")
         });
         rules.put("B", new String[][]{
-                {"f","[","!","@","f","A","]"}
+                {"f","[","!","@","A","]"}
         });
         rules.put("F", new String[][]{
                 ("f[^^L]").split(""),
                 ("f[&&L]").split("")
         });
         rulesets.put(2,rules);
+
+        rules = new HashMap<>();
+        axioms.put(3,new String[]{"B"});
+        rules.put("A", new String[][]{
+                ("F![^&@FLA][@FA]").split(""),
+                ("F![^>>>>'&@FLA][@FA]").split(""),
+                ("F![^>>>>>>>>>&@FLA][@FA]").split(""),
+                ("F![&@FLA]>>>>'[&@FLA]>>>>>'[&@FLA]").split(""),
+                ("F![&@FLA]>>>>'[&@FLA]>>>>>'[&@FLA]").split("")
+        }); //rules for base
+        rules.put("B", new String[][]{
+                ("[!|P]f[!@A]").split("")
+        }); //rules for placing leaves
+        rules.put("F", new String[][]{
+                ("f[^^L]").split(""),
+                ("f[&&L]").split("")
+        }); //rules for branches, leaf spawning
+        rules.put("F", new String[][]{
+                ("f[^^L]").split(""),
+                ("f[&&L]").split("")
+        }); //root base rules
+        rules.put("P", new String[][]{
+                ("[>>>>&&&f*!!R]>>>>>[&&&f*!!R]>>>>>[&&&f*!!R]").split(""),
+                (">>[>&&&f*!!R]>>>>[&&&f*!!R]>>>>>[&&&f*!!R]").split(""),
+                ("[>&&&f*!!R]>>>>[&&&f*!!R]>>>>>[&&&f*!!R]").split(""),
+        }); //root rules
+        rules.put("R", new String[][]{
+                ("[+.f*!R][.f*!R][-.f*!R]").split(""),
+                ("[+.f*!R][-.f*!R]").split(""),
+        });
+        rulesets.put(3,rules);
 
         FractalBuilder.asyncStochasticThree(server,world,x,y,z,length,radius,delta,iterations,axioms.get(ruleNo),rulesets.get(ruleNo),context.getSource().getPlayer(), decay);
 

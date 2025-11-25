@@ -60,20 +60,20 @@ public class LightTreeBuilder {
 
     }
 
-    public static HashSet<BlockPos> drawLightLeaf(Vector3f start, Vector3f dir, float radius){
+    public static HashSet<BlockPos> drawLightLeaf(Vector3f start, Vector3f dir, float leafLength){
         HashSet<BlockPos> toLeaf = new HashSet<>();
 
-        Vector3f centre  = new Vector3f(start).add(new Vector3f(dir).mul(radius));
+        Vector3f centre  = new Vector3f(start).add(new Vector3f(dir).mul(leafLength));
 
         Vector3f arbitrary = new Vector3f((float)Math.random(),(float)Math.random(),(float)Math.random());
         Vector3f normal = dir.cross(arbitrary, new Vector3f()).normalize();
 
-        float angleStep = 1/(2*radius);
+        float angleStep = 1/(2*leafLength);
 
         for (float theta=0f;theta<2*Math.PI;theta+=angleStep){
             float cosT = (float) Math.cos(theta);
             float sinT = (float) Math.sin(theta);
-            Vector3f offset = new Vector3f(dir).mul(cosT*radius).add(new Vector3f(normal).mul(sinT*radius*0.5F));
+            Vector3f offset = new Vector3f(dir).mul(cosT*leafLength).add(new Vector3f(normal).mul(sinT*leafLength*0.5F));
             Vector3f ovalPoint = new Vector3f(centre).add(offset);
             HashSet<BlockPos> toAddToLeaf = drawLightBranch(centre,ovalPoint);
             toLeaf.addAll(toAddToLeaf);
@@ -83,7 +83,7 @@ public class LightTreeBuilder {
 
     }
 
-    public static HashSet[] buildLightTree(String[] sentence, BlockPos StartPos, float delta, float length, float radius, float decay) {
+    public static HashSet[] buildLightTree(String[] sentence, BlockPos StartPos, float delta, float length, float radius, float decay, float trunkDecay, float leafLength) {
         HashSet<BlockPos> toEdit = new HashSet<>();
         HashSet<BlockPos> toLeaf = new HashSet<>();
 
@@ -115,19 +115,14 @@ public class LightTreeBuilder {
             up.normalize();
             right.normalize();
             String symbol = sentence[i];
-//            System.out.println(symbol + " sada: " + i);
             if (symbol.equals("F") || symbol.equals("f")) {
-//                System.out.println("direction: " + direction);
                 pos.add(new Vector3f(direction).mul(length));
-//                System.out.println("length: "+length);
-//                System.out.println("DRAWING BRANCH - " + (float) (i) / sentence.length * 100 + "%");
                 HashSet<BlockPos> toAddToEdit = drawLight3DBranch(prev, pos, radius);
                 toEdit.addAll(toAddToEdit);
 
             } else if (symbol.equals("L")) {
-                HashSet<BlockPos> addToLeaf = drawLightLeaf(pos, direction, 3F);
+                HashSet<BlockPos> addToLeaf = drawLightLeaf(pos, direction,leafLength);
                 toLeaf.addAll(addToLeaf);
-//                drawSphereLeaf(pos,direction,4F,world);
 
             } else if (symbol.equals("-")) {
                 Matrix3f rot = new Matrix3f().rotation(-delta, up.x, up.y, up.z);
@@ -159,12 +154,30 @@ public class LightTreeBuilder {
                 right.mul(rot);
                 up.mul(rot);
 
+            } else if (symbol.equals("|")) {
+                direction.rotateX((float) Math.PI);
+                up.rotateX((float) Math.PI);
+            /*
+            } else if (symbol.equals(".")) {
+
+                int randomBias=-1;
+                if (Math.random()<0.8){randomBias=1;}
+
+                Matrix3f rot = new Matrix3f().rotation(randomBias*delta/6, right.x, right.y, right.z);
+                direction.mul(rot);
+                up.mul(rot);
+
+             */
+
             } else if (symbol.equals("!")) {
-                radius *= 0.75F;
+                radius *= trunkDecay;
 
             } else if (symbol.equals("@")) {
                 length *= decay;
-
+            /*
+            } else if (symbol.equals("*")) {
+                length *= (float) (decay*1.06);
+             */
             } else if (symbol.equals("[")) {
                 posStack.push(new Vector3f(pos));
                 dirStack.push(new Vector3f(direction));
