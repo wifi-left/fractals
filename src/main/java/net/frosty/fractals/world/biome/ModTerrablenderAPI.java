@@ -9,7 +9,7 @@ import terrablender.api.TerraBlenderApi;
 public class ModTerrablenderAPI implements TerraBlenderApi {
     @Override
     public void onTerraBlenderInitialized() {
-        Regions.register(new ModOverworldRegion(Identifier.of(Fractals.MOD_ID, "overworld"), RegionType.OVERWORLD,15));
+        Regions.register(new ModOverworldRegion(Identifier.of(Fractals.MOD_ID, "overworld"), RegionType.OVERWORLD,6));
 
 
     }

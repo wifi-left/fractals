@@ -38,7 +38,7 @@ public class Fractals implements ModInitializer {
 		ModBlocks.registerModBlocks();
 		ModWorldGeneration.generateModWorldGen();
 
-		CommandRegistrationCallback.EVENT.register(commandCentre::register);
+//		CommandRegistrationCallback.EVENT.register(commandCentre::register);
 
 		ServerTickEvents.END_SERVER_TICK.register(this::onServerTick);
 	}
