@@ -6,6 +6,13 @@ This mod seeks to fill the gaps in Minecraft's world generation by adding large 
 - New Leaf Type - 'Fractal Leaves'
   - These leaves let all light through, reducing large shadows at the base of the tree.
 - Fractal Forest biome
+- Command support for manual giant tree generation
+
+# Commands
+- `/GIANT_TREE`  
+  Generates a giant tree at your current position with a default target height of ~150 blocks.
+- `/GIANT_TREE <height>`  
+  Generates a giant tree at your current position with a custom target height (40-300 blocks).
 
 # Warnings
 - This mod is still in development, and may contain some bugs...
