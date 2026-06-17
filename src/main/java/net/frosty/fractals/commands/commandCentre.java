@@ -349,7 +349,7 @@ public class commandCentre {
         }
 
         float baseHeight = estimateMaxHeight(sentence, delta, 1F, decay);
-        float branchLength = baseHeight > 0 ? targetHeight / baseHeight : targetHeight / 10F;
+        float branchLength = targetHeight / Math.max(baseHeight, 1F);
 
         player.sendMessage(Text.of("Generating giant tree (target height: " + targetHeight + ", branch length: " + String.format("%.2f", branchLength) + ")"), false);
         FractalBuilder.asyncThree(server, world, base.getX(), base.getY(), base.getZ(), branchLength, radius, delta, iterations, axiom, rules, player, Blocks.OAK_WOOD, decay);
