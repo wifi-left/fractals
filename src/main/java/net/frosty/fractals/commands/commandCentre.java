@@ -28,6 +28,8 @@ import java.util.HashMap;
 import java.util.Stack;
 
 public class commandCentre {
+    private static final float VECTOR_EPSILON_SQ = 1.0E-6F;
+
     public static void register(CommandDispatcher<ServerCommandSource> dispatcher, CommandRegistryAccess registry, CommandManager.RegistrationEnvironment environment) {
         dispatcher.register(CommandManager.literal("2D_TREE")
                 .then(CommandManager.argument("x", IntegerArgumentType.integer())
@@ -64,6 +66,15 @@ public class commandCentre {
                 .then(CommandManager.literal("at")
                         .then(CommandManager.argument("pos", BlockPosArgumentType.blockPos())
                                 .executes(context -> giantTree(context, 150, BlockPosArgumentType.getBlockPos(context, "pos"), Blocks.OAK_WOOD, ModBlocks.LIGHT_LEAVES))
+                                .then(CommandManager.argument("trunk_block", BlockStateArgumentType.blockState(registry))
+                                        .then(CommandManager.argument("leaf_block", BlockStateArgumentType.blockState(registry))
+                                                .executes(context -> giantTree(
+                                                        context,
+                                                        150,
+                                                        BlockPosArgumentType.getBlockPos(context, "pos"),
+                                                        BlockStateArgumentType.getBlockState(context, "trunk_block").getBlockState().getBlock(),
+                                                        BlockStateArgumentType.getBlockState(context, "leaf_block").getBlockState().getBlock()
+                                                ))))
                                 .then(CommandManager.argument("height", IntegerArgumentType.integer(40, 300))
                                         .executes(context -> giantTree(context, IntegerArgumentType.getInteger(context, "height"), BlockPosArgumentType.getBlockPos(context, "pos"), Blocks.OAK_WOOD, ModBlocks.LIGHT_LEAVES))
                                         .then(CommandManager.argument("trunk_block", BlockStateArgumentType.blockState(registry))
@@ -378,7 +389,7 @@ public class commandCentre {
         Vector3f direction = new Vector3f(0, 1, 0);
         Vector3f up = new Vector3f(0, 0, 1);
         Vector3f right = direction.cross(up, new Vector3f());
-        if (right.lengthSquared() < 1.0E-6F) {
+        if (right.lengthSquared() < VECTOR_EPSILON_SQ) {
             right = new Vector3f(1, 0, 0);
         } else {
             right.normalize();

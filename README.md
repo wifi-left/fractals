@@ -15,6 +15,8 @@ This mod seeks to fill the gaps in Minecraft's world generation by adding large 
   Generates a giant tree at your current position with a custom target height (40-300 blocks).
 - `/GIANT_TREE at <pos>`  
   Generates a giant tree at the target block position with default height and default blocks.
+- `/GIANT_TREE at <pos> <trunk_block> <leaf_block>`  
+  Generates a giant tree at the target position with default height and custom trunk/leaf blocks.
 - `/GIANT_TREE at <pos> <height> <trunk_block> <leaf_block>`  
   Generates a giant tree at the target position with custom height, custom trunk block, and custom leaf block.
 
