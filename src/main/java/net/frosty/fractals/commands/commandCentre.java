@@ -60,12 +60,12 @@ public class commandCentre {
                 .then(CommandManager.argument("ruleset", IntegerArgumentType.integer()).executes(commandCentre::stochasticTree)))))))))));
 
         dispatcher.register(CommandManager.literal("GIANT_TREE")
-                .executes(context -> giantTree(context, 150, context.getSource().getPlayer().getBlockPos(), Blocks.OAK_WOOD, ModBlocks.LIGHT_LEAVES))
+                .executes(context -> giantTree(context, 150, context.getSource().getPlayer().getBlockPos(), Blocks.OAK_WOOD, Blocks.OAK_LEAVES))
                 .then(CommandManager.argument("height", IntegerArgumentType.integer(40, 300))
-                        .executes(context -> giantTree(context, IntegerArgumentType.getInteger(context, "height"), context.getSource().getPlayer().getBlockPos(), Blocks.OAK_WOOD, ModBlocks.LIGHT_LEAVES)))
+                        .executes(context -> giantTree(context, IntegerArgumentType.getInteger(context, "height"), context.getSource().getPlayer().getBlockPos(), Blocks.OAK_WOOD, Blocks.OAK_LEAVES)))
                 .then(CommandManager.literal("at")
                         .then(CommandManager.argument("pos", BlockPosArgumentType.blockPos())
-                                .executes(context -> giantTree(context, 150, BlockPosArgumentType.getBlockPos(context, "pos"), Blocks.OAK_WOOD, ModBlocks.LIGHT_LEAVES))
+                                .executes(context -> giantTree(context, 150, BlockPosArgumentType.getBlockPos(context, "pos"), Blocks.OAK_WOOD, Blocks.OAK_LEAVES))
                                 .then(CommandManager.argument("trunk_block", BlockStateArgumentType.blockState(registry))
                                         .then(CommandManager.argument("leaf_block", BlockStateArgumentType.blockState(registry))
                                                 .executes(context -> giantTree(
@@ -76,7 +76,7 @@ public class commandCentre {
                                                         BlockStateArgumentType.getBlockState(context, "leaf_block").getBlockState().getBlock()
                                                 ))))
                                 .then(CommandManager.argument("height", IntegerArgumentType.integer(40, 300))
-                                        .executes(context -> giantTree(context, IntegerArgumentType.getInteger(context, "height"), BlockPosArgumentType.getBlockPos(context, "pos"), Blocks.OAK_WOOD, ModBlocks.LIGHT_LEAVES))
+                                        .executes(context -> giantTree(context, IntegerArgumentType.getInteger(context, "height"), BlockPosArgumentType.getBlockPos(context, "pos"), Blocks.OAK_WOOD, Blocks.OAK_LEAVES))
                                         .then(CommandManager.argument("trunk_block", BlockStateArgumentType.blockState(registry))
                                                 .then(CommandManager.argument("leaf_block", BlockStateArgumentType.blockState(registry))
                                                         .executes(context -> giantTree(
@@ -261,7 +261,7 @@ public class commandCentre {
         rules.put("S", ("F[^^L]").split(""));
         rulesets.put(4,rules);
 
-        FractalBuilder.asyncThree(server,world,x,y,z,length,radius,deltas.get(ruleNo),iterations,axioms.get(ruleNo),rulesets.get(ruleNo),context.getSource().getPlayer(),blocks.get(ruleNo), ModBlocks.LIGHT_LEAVES,decays.get(ruleNo));
+        FractalBuilder.asyncThree(server,world,x,y,z,length,radius,deltas.get(ruleNo),iterations,axioms.get(ruleNo),rulesets.get(ruleNo),context.getSource().getPlayer(),blocks.get(ruleNo), Blocks.OAK_LEAVES,decays.get(ruleNo));
 
 
         return 1;
