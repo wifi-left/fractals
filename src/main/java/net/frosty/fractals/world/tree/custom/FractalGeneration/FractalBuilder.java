@@ -30,7 +30,7 @@ public class FractalBuilder {
 
 //                System.out.println("BUILDING iteration " + iteration + "...");
                 if (iteration==iterations) {
-                    TreeBuilder.buildThreeFractal(sentenceHolder, x, y, z, delta, length, radius, world, player, iteration, Blocks.OAK_WOOD, ModBlocks.LIGHT_LEAVES, decay);
+                    TreeBuilder.buildThreeFractal(sentenceHolder, x, y, z, delta, length, radius, world, player, iteration, Blocks.OAK_WOOD, Blocks.OAK_LEAVES, decay);
                 }
 
                 i++;
