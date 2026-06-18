@@ -61,19 +61,20 @@ public class commandCentre {
                 .executes(context -> giantTree(context, 150, context.getSource().getPlayer().getBlockPos(), Blocks.OAK_WOOD, ModBlocks.LIGHT_LEAVES))
                 .then(CommandManager.argument("height", IntegerArgumentType.integer(40, 300))
                         .executes(context -> giantTree(context, IntegerArgumentType.getInteger(context, "height"), context.getSource().getPlayer().getBlockPos(), Blocks.OAK_WOOD, ModBlocks.LIGHT_LEAVES)))
-                .then(CommandManager.argument("pos", BlockPosArgumentType.blockPos())
-                        .executes(context -> giantTree(context, 150, BlockPosArgumentType.getBlockPos(context, "pos"), Blocks.OAK_WOOD, ModBlocks.LIGHT_LEAVES))
-                        .then(CommandManager.argument("height", IntegerArgumentType.integer(40, 300))
-                                .executes(context -> giantTree(context, IntegerArgumentType.getInteger(context, "height"), BlockPosArgumentType.getBlockPos(context, "pos"), Blocks.OAK_WOOD, ModBlocks.LIGHT_LEAVES))
-                                .then(CommandManager.argument("trunk_block", BlockStateArgumentType.blockState(registry))
-                                        .then(CommandManager.argument("leaf_block", BlockStateArgumentType.blockState(registry))
-                                                .executes(context -> giantTree(
-                                                        context,
-                                                        IntegerArgumentType.getInteger(context, "height"),
-                                                        BlockPosArgumentType.getBlockPos(context, "pos"),
-                                                        BlockStateArgumentType.getBlockState(context, "trunk_block").getBlockState().getBlock(),
-                                                        BlockStateArgumentType.getBlockState(context, "leaf_block").getBlockState().getBlock()
-                                                )))))));
+                .then(CommandManager.literal("at")
+                        .then(CommandManager.argument("pos", BlockPosArgumentType.blockPos())
+                                .executes(context -> giantTree(context, 150, BlockPosArgumentType.getBlockPos(context, "pos"), Blocks.OAK_WOOD, ModBlocks.LIGHT_LEAVES))
+                                .then(CommandManager.argument("height", IntegerArgumentType.integer(40, 300))
+                                        .executes(context -> giantTree(context, IntegerArgumentType.getInteger(context, "height"), BlockPosArgumentType.getBlockPos(context, "pos"), Blocks.OAK_WOOD, ModBlocks.LIGHT_LEAVES))
+                                        .then(CommandManager.argument("trunk_block", BlockStateArgumentType.blockState(registry))
+                                                .then(CommandManager.argument("leaf_block", BlockStateArgumentType.blockState(registry))
+                                                        .executes(context -> giantTree(
+                                                                context,
+                                                                IntegerArgumentType.getInteger(context, "height"),
+                                                                BlockPosArgumentType.getBlockPos(context, "pos"),
+                                                                BlockStateArgumentType.getBlockState(context, "trunk_block").getBlockState().getBlock(),
+                                                                BlockStateArgumentType.getBlockState(context, "leaf_block").getBlockState().getBlock()
+                                                        ))))))));
     }
 
     private static int twoTree(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
@@ -377,7 +378,7 @@ public class commandCentre {
         Vector3f direction = new Vector3f(0, 1, 0);
         Vector3f up = new Vector3f(0, 0, 1);
         Vector3f right = direction.cross(up, new Vector3f());
-        if (right.lengthSquared() == 0) {
+        if (right.lengthSquared() < 1.0E-6F) {
             right = new Vector3f(1, 0, 0);
         } else {
             right.normalize();
