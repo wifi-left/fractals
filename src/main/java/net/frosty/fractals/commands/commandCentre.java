@@ -5,23 +5,31 @@ import com.mojang.brigadier.arguments.FloatArgumentType;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import net.frosty.fractals.block.ModBlocks;
 import net.frosty.fractals.world.tree.custom.FractalGeneration.FractalBuilder;
 import net.frosty.fractals.world.tree.custom.FractalGeneration.LSystemHelper;
 import net.frosty.fractals.world.tree.custom.FractalGeneration.TreeBuilder;
 import net.minecraft.block.Block;
 import net.minecraft.block.Blocks;
 import net.minecraft.command.CommandRegistryAccess;
+import net.minecraft.command.argument.BlockPosArgumentType;
+import net.minecraft.command.argument.BlockStateArgumentType;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.text.Text;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
+import org.joml.Matrix3f;
+import org.joml.Vector3f;
 
 import java.util.HashMap;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.TimeUnit;
+import java.util.Stack;
 
 public class commandCentre {
+    private static final float VECTOR_EPSILON_SQ = 1.0E-6F;
+
     public static void register(CommandDispatcher<ServerCommandSource> dispatcher, CommandRegistryAccess registry, CommandManager.RegistrationEnvironment environment) {
         dispatcher.register(CommandManager.literal("2D_TREE")
                 .then(CommandManager.argument("x", IntegerArgumentType.integer())
@@ -51,6 +59,33 @@ public class commandCentre {
                 .then(CommandManager.argument("iterations", IntegerArgumentType.integer())
                 .then(CommandManager.argument("ruleset", IntegerArgumentType.integer()).executes(commandCentre::stochasticTree)))))))))));
 
+        dispatcher.register(CommandManager.literal("GIANT_TREE")
+                .executes(context -> giantTree(context, 150, context.getSource().getPlayer().getBlockPos(), Blocks.OAK_WOOD, ModBlocks.LIGHT_LEAVES))
+                .then(CommandManager.argument("height", IntegerArgumentType.integer(40, 300))
+                        .executes(context -> giantTree(context, IntegerArgumentType.getInteger(context, "height"), context.getSource().getPlayer().getBlockPos(), Blocks.OAK_WOOD, ModBlocks.LIGHT_LEAVES)))
+                .then(CommandManager.literal("at")
+                        .then(CommandManager.argument("pos", BlockPosArgumentType.blockPos())
+                                .executes(context -> giantTree(context, 150, BlockPosArgumentType.getBlockPos(context, "pos"), Blocks.OAK_WOOD, ModBlocks.LIGHT_LEAVES))
+                                .then(CommandManager.argument("trunk_block", BlockStateArgumentType.blockState(registry))
+                                        .then(CommandManager.argument("leaf_block", BlockStateArgumentType.blockState(registry))
+                                                .executes(context -> giantTree(
+                                                        context,
+                                                        150,
+                                                        BlockPosArgumentType.getBlockPos(context, "pos"),
+                                                        BlockStateArgumentType.getBlockState(context, "trunk_block").getBlockState().getBlock(),
+                                                        BlockStateArgumentType.getBlockState(context, "leaf_block").getBlockState().getBlock()
+                                                ))))
+                                .then(CommandManager.argument("height", IntegerArgumentType.integer(40, 300))
+                                        .executes(context -> giantTree(context, IntegerArgumentType.getInteger(context, "height"), BlockPosArgumentType.getBlockPos(context, "pos"), Blocks.OAK_WOOD, ModBlocks.LIGHT_LEAVES))
+                                        .then(CommandManager.argument("trunk_block", BlockStateArgumentType.blockState(registry))
+                                                .then(CommandManager.argument("leaf_block", BlockStateArgumentType.blockState(registry))
+                                                        .executes(context -> giantTree(
+                                                                context,
+                                                                IntegerArgumentType.getInteger(context, "height"),
+                                                                BlockPosArgumentType.getBlockPos(context, "pos"),
+                                                                BlockStateArgumentType.getBlockState(context, "trunk_block").getBlockState().getBlock(),
+                                                                BlockStateArgumentType.getBlockState(context, "leaf_block").getBlockState().getBlock()
+                                                        ))))))));
     }
 
     private static int twoTree(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
@@ -226,7 +261,7 @@ public class commandCentre {
         rules.put("S", ("F[^^L]").split(""));
         rulesets.put(4,rules);
 
-        FractalBuilder.asyncThree(server,world,x,y,z,length,radius,deltas.get(ruleNo),iterations,axioms.get(ruleNo),rulesets.get(ruleNo),context.getSource().getPlayer(),blocks.get(ruleNo),decays.get(ruleNo));
+        FractalBuilder.asyncThree(server,world,x,y,z,length,radius,deltas.get(ruleNo),iterations,axioms.get(ruleNo),rulesets.get(ruleNo),context.getSource().getPlayer(),blocks.get(ruleNo), ModBlocks.LIGHT_LEAVES,decays.get(ruleNo));
 
 
         return 1;
@@ -319,6 +354,104 @@ public class commandCentre {
         FractalBuilder.asyncStochasticThree(server,world,x,y,z,length,radius,delta,iterations,axioms.get(ruleNo),rulesets.get(ruleNo),context.getSource().getPlayer(), decay);
 
         return 1;
+    }
+
+    private static int giantTree(CommandContext<ServerCommandSource> context, int targetHeight, BlockPos base, Block trunkBlock, Block leafBlock) throws CommandSyntaxException {
+        ServerPlayerEntity player = context.getSource().getPlayer();
+        World world = context.getSource().getWorld();
+        MinecraftServer server = context.getSource().getServer();
+
+        float delta = 20F;
+        float decay = 0.8F;
+        float radius = 2F;
+        int iterations = 7;
+        String[] axiom = new String[]{"A"};
+        HashMap<String, String[]> rules = new HashMap<>();
+        rules.put("A", ("f[-^<@!A]F[&@!A]F[+^<@!A]").split(""));
+        rules.put("F", ("f[<<L]").split(""));
+
+        String[] sentence = axiom;
+        for (int i = 0; i < iterations; i++) {
+            sentence = LSystemHelper.UpdateSentence(sentence, rules, false);
+        }
+
+        float baseHeight = estimateMaxHeight(sentence, delta, 1F, decay);
+        float branchLength = targetHeight / Math.max(baseHeight, 1F);
+
+        player.sendMessage(Text.of("Generating giant tree at " + base.toShortString() + " (height: " + targetHeight + ", branch length: " + String.format("%.2f", branchLength) + ", trunk: " + trunkBlock.getName().getString() + ", leaf: " + leafBlock.getName().getString() + ")"), false);
+        FractalBuilder.asyncThree(server, world, base.getX(), base.getY(), base.getZ(), branchLength, radius, delta, iterations, axiom, rules, player, trunkBlock, leafBlock, decay);
+        return 1;
+    }
+
+    private static float estimateMaxHeight(String[] sentence, float deltaDegrees, float initialLength, float decay) {
+        float delta = (float) Math.toRadians(deltaDegrees);
+        Vector3f position = new Vector3f(0, 0, 0);
+        Vector3f direction = new Vector3f(0, 1, 0);
+        Vector3f up = new Vector3f(0, 0, 1);
+        Vector3f right = direction.cross(up, new Vector3f());
+        if (right.lengthSquared() < VECTOR_EPSILON_SQ) {
+            right = new Vector3f(1, 0, 0);
+        } else {
+            right.normalize();
+        }
+        float length = initialLength;
+        float maxY = 0F;
+
+        Stack<Vector3f> posStack = new Stack<>();
+        Stack<Vector3f> dirStack = new Stack<>();
+        Stack<Vector3f> upStack = new Stack<>();
+        Stack<Vector3f> rightStack = new Stack<>();
+        Stack<Float> lengthStack = new Stack<>();
+
+        for (String symbol : sentence) {
+            direction.normalize();
+            up.normalize();
+            right.normalize();
+            if (symbol.equals("F") || symbol.equals("f")) {
+                position.add(new Vector3f(direction).mul(length));
+                maxY = Math.max(maxY, position.y);
+            } else if (symbol.equals("-")) {
+                Matrix3f rot = new Matrix3f().rotation(-delta, up.x, up.y, up.z);
+                direction.mul(rot);
+                right.mul(rot);
+            } else if (symbol.equals("+")) {
+                Matrix3f rot = new Matrix3f().rotation(delta, up.x, up.y, up.z);
+                direction.mul(rot);
+                right.mul(rot);
+            } else if (symbol.equals("&")) {
+                Matrix3f rot = new Matrix3f().rotation(-delta, right.x, right.y, right.z);
+                direction.mul(rot);
+                up.mul(rot);
+            } else if (symbol.equals("^")) {
+                Matrix3f rot = new Matrix3f().rotation(delta, right.x, right.y, right.z);
+                direction.mul(rot);
+                up.mul(rot);
+            } else if (symbol.equals("<")) {
+                Matrix3f rot = new Matrix3f().rotation(-delta, direction.x, direction.y, direction.z);
+                right.mul(rot);
+                up.mul(rot);
+            } else if (symbol.equals(">")) {
+                Matrix3f rot = new Matrix3f().rotation(delta, direction.x, direction.y, direction.z);
+                right.mul(rot);
+                up.mul(rot);
+            } else if (symbol.equals("@")) {
+                length *= decay;
+            } else if (symbol.equals("[")) {
+                posStack.push(new Vector3f(position));
+                dirStack.push(new Vector3f(direction));
+                upStack.push(new Vector3f(up));
+                rightStack.push(new Vector3f(right));
+                lengthStack.push(length);
+            } else if (symbol.equals("]")) {
+                position = posStack.pop();
+                direction = dirStack.pop();
+                up = upStack.pop();
+                right = rightStack.pop();
+                length = lengthStack.pop();
+            }
+        }
+
+        return maxY;
     }
 
 }
