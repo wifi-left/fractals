@@ -42,10 +42,6 @@ public class ModBlocks {
     public static void registerModBlocks(){
         Fractals.LOGGER.info("Registering Mod Blocks for " + Fractals.MOD_ID);
 
-        ItemGroupEvents.modifyEntriesEvent(ItemGroups.NATURAL).register(fabricItemGroupEntries -> {
-            fabricItemGroupEntries.add(ModBlocks.LIGHT_LEAVES);
-        });
-
     }
 
 }
