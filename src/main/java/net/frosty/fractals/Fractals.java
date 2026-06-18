@@ -4,7 +4,6 @@ import net.fabricmc.api.ModInitializer;
 
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
-import net.frosty.fractals.block.ModBlocks;
 import net.frosty.fractals.commands.commandCentre;
 import net.frosty.fractals.item.ModItems;
 import net.frosty.fractals.mixin.TrunkPlacerTypeInvoker;
@@ -35,7 +34,6 @@ public class Fractals implements ModInitializer {
 	@Override
 	public void onInitialize() {
 		ModItems.registerModItems();
-		ModBlocks.registerModBlocks();
 		ModWorldGeneration.generateModWorldGen();
 
 		CommandRegistrationCallback.EVENT.register(commandCentre::register);
@@ -52,7 +50,7 @@ public class Fractals implements ModInitializer {
 			ChunkPos chunkPos = entry.getKey();
 			if (world.isChunkLoaded(chunkPos.x,chunkPos.z)){
 				for (BlockPos bp : new ArrayList<>(entry.getValue())){
-					world.setBlockState(bp, ModBlocks.LIGHT_LEAVES.getDefaultState().with(Properties.PERSISTENT,true));
+					world.setBlockState(bp, Blocks.OAK_LEAVES.getDefaultState().with(Properties.PERSISTENT,true));
 				}
 				it.remove();
 			}

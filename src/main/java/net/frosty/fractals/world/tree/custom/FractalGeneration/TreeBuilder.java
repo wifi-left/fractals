@@ -1,6 +1,5 @@
 package net.frosty.fractals.world.tree.custom.FractalGeneration;
 
-import net.frosty.fractals.block.ModBlocks;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
@@ -181,7 +180,7 @@ public class TreeBuilder {
                 draw3DBranch(prev, pos, radius, world, block);
 
             } else if (symbol.equals("L")){
-                drawLeaf(pos,direction,5F,world, ModBlocks.LIGHT_LEAVES);
+                drawLeaf(pos,direction,5F,world, Blocks.OAK_LEAVES);
 //                drawSphereLeaf(pos,direction,4F,world, ModBlocks.LIGHT_LEAVES);
 
             } else if (symbol.equals("-")) {
@@ -227,7 +226,7 @@ public class TreeBuilder {
         }
     }
 
-    public static void buildThreeFractal(String[] sentence, int x, int y, int z, float delta, float length, float radius, World world, ServerPlayerEntity player, int iteration, Block block, Block leafBlock, Float decay) {
+    public static void buildThreeFractal(String[] sentence, int x, int y, int z, float delta, float length, float radius, World world, ServerPlayerEntity player, int iteration, Block block, Block leafBlock, Float decay, Float branchThicknessDecay) {
         Stack<Vector3f> posStack = new Stack<>();
         Stack<Vector3f> dirStack = new Stack<>();
         Stack<Vector3f> upStack = new Stack<>();
@@ -316,7 +315,7 @@ public class TreeBuilder {
                 up.mul(rot);
 
             } else if (symbol.equals("!")) {
-                radius *= 0.75F;
+                radius *= branchThicknessDecay;
 
             } else if (symbol.equals("@")) {
                 length *= decay;
