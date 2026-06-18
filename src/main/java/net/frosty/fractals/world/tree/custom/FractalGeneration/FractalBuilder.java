@@ -1,5 +1,6 @@
 package net.frosty.fractals.world.tree.custom.FractalGeneration;
 
+import net.frosty.fractals.block.ModBlocks;
 import net.minecraft.block.Block;
 import net.minecraft.block.Blocks;
 import net.minecraft.server.MinecraftServer;
@@ -29,7 +30,7 @@ public class FractalBuilder {
 
 //                System.out.println("BUILDING iteration " + iteration + "...");
                 if (iteration==iterations) {
-                    TreeBuilder.buildThreeFractal(sentenceHolder, x, y, z, delta, length, radius, world, player, iteration, Blocks.OAK_WOOD, decay);
+                    TreeBuilder.buildThreeFractal(sentenceHolder, x, y, z, delta, length, radius, world, player, iteration, Blocks.OAK_WOOD, ModBlocks.LIGHT_LEAVES, decay);
                 }
 
                 i++;
@@ -42,7 +43,7 @@ public class FractalBuilder {
 
     }
 
-    public static void asyncThree(MinecraftServer server, World world, int x, int y, int z, float length, float radius, float delta, int iterations, String[] axiom, HashMap<String, String[]> rules, ServerPlayerEntity player, Block block, Float decay){
+    public static void asyncThree(MinecraftServer server, World world, int x, int y, int z, float length, float radius, float delta, int iterations, String[] axiom, HashMap<String, String[]> rules, ServerPlayerEntity player, Block trunkBlock, Block leafBlock, Float decay){
         System.out.println("iterations: " + iterations);
         System.out.println("delta: " + delta);
 
@@ -58,19 +59,19 @@ public class FractalBuilder {
                 }
                 int iteration = i + 1;
 //                System.out.println("ITERATION " + iteration + "...");
-                if (block.equals(Blocks.BLACK_CONCRETE)) {
+                if (trunkBlock.equals(Blocks.BLACK_CONCRETE)) {
                     sentenceHolder = LSystemHelper.UpdateSentence(sentenceHolder, rules,false);
                 } else {
                     sentenceHolder = LSystemHelper.UpdateSentence(sentenceHolder, rules, false);
                 }
                 System.out.println("BUILDING iteration " + iteration + "...");
-                System.out.println(block);
+                System.out.println(trunkBlock);
 //                System.out.println(Arrays.toString(sentenceHolder));
-                if (block.equals(Blocks.BLACK_CONCRETE) && iteration==iterations) {
-                    TreeBuilder.buildThreeFractal(sentenceHolder, x, y, z, delta, length, radius, world, player, iteration, block, decay);
-                } else if (!block.equals(Blocks.BLACK_CONCRETE) && iteration==iterations){
+                if (trunkBlock.equals(Blocks.BLACK_CONCRETE) && iteration==iterations) {
+                    TreeBuilder.buildThreeFractal(sentenceHolder, x, y, z, delta, length, radius, world, player, iteration, trunkBlock, leafBlock, decay);
+                } else if (!trunkBlock.equals(Blocks.BLACK_CONCRETE) && iteration==iterations){
 //                    System.out.println('e');
-                    TreeBuilder.buildThreeFractal(sentenceHolder, x, y, z, delta, length, radius, world, player, iteration, block, decay);
+                    TreeBuilder.buildThreeFractal(sentenceHolder, x, y, z, delta, length, radius, world, player, iteration, trunkBlock, leafBlock, decay);
 //                    System.out.println("built layer");
                 }
 

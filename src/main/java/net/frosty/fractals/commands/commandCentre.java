@@ -5,12 +5,15 @@ import com.mojang.brigadier.arguments.FloatArgumentType;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import net.frosty.fractals.block.ModBlocks;
 import net.frosty.fractals.world.tree.custom.FractalGeneration.FractalBuilder;
 import net.frosty.fractals.world.tree.custom.FractalGeneration.LSystemHelper;
 import net.frosty.fractals.world.tree.custom.FractalGeneration.TreeBuilder;
 import net.minecraft.block.Block;
 import net.minecraft.block.Blocks;
 import net.minecraft.command.CommandRegistryAccess;
+import net.minecraft.command.argument.BlockPosArgumentType;
+import net.minecraft.command.argument.BlockStateArgumentType;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
@@ -55,9 +58,22 @@ public class commandCentre {
                 .then(CommandManager.argument("ruleset", IntegerArgumentType.integer()).executes(commandCentre::stochasticTree)))))))))));
 
         dispatcher.register(CommandManager.literal("GIANT_TREE")
-                .executes(context -> giantTree(context, 150))
+                .executes(context -> giantTree(context, 150, context.getSource().getPlayer().getBlockPos(), Blocks.OAK_WOOD, ModBlocks.LIGHT_LEAVES))
                 .then(CommandManager.argument("height", IntegerArgumentType.integer(40, 300))
-                        .executes(context -> giantTree(context, IntegerArgumentType.getInteger(context, "height")))));
+                        .executes(context -> giantTree(context, IntegerArgumentType.getInteger(context, "height"), context.getSource().getPlayer().getBlockPos(), Blocks.OAK_WOOD, ModBlocks.LIGHT_LEAVES)))
+                .then(CommandManager.argument("pos", BlockPosArgumentType.blockPos())
+                        .executes(context -> giantTree(context, 150, BlockPosArgumentType.getBlockPos(context, "pos"), Blocks.OAK_WOOD, ModBlocks.LIGHT_LEAVES))
+                        .then(CommandManager.argument("height", IntegerArgumentType.integer(40, 300))
+                                .executes(context -> giantTree(context, IntegerArgumentType.getInteger(context, "height"), BlockPosArgumentType.getBlockPos(context, "pos"), Blocks.OAK_WOOD, ModBlocks.LIGHT_LEAVES))
+                                .then(CommandManager.argument("trunk_block", BlockStateArgumentType.blockState(registry))
+                                        .then(CommandManager.argument("leaf_block", BlockStateArgumentType.blockState(registry))
+                                                .executes(context -> giantTree(
+                                                        context,
+                                                        IntegerArgumentType.getInteger(context, "height"),
+                                                        BlockPosArgumentType.getBlockPos(context, "pos"),
+                                                        BlockStateArgumentType.getBlockState(context, "trunk_block").getBlockState().getBlock(),
+                                                        BlockStateArgumentType.getBlockState(context, "leaf_block").getBlockState().getBlock()
+                                                )))))));
     }
 
     private static int twoTree(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
@@ -233,7 +249,7 @@ public class commandCentre {
         rules.put("S", ("F[^^L]").split(""));
         rulesets.put(4,rules);
 
-        FractalBuilder.asyncThree(server,world,x,y,z,length,radius,deltas.get(ruleNo),iterations,axioms.get(ruleNo),rulesets.get(ruleNo),context.getSource().getPlayer(),blocks.get(ruleNo),decays.get(ruleNo));
+        FractalBuilder.asyncThree(server,world,x,y,z,length,radius,deltas.get(ruleNo),iterations,axioms.get(ruleNo),rulesets.get(ruleNo),context.getSource().getPlayer(),blocks.get(ruleNo), ModBlocks.LIGHT_LEAVES,decays.get(ruleNo));
 
 
         return 1;
@@ -328,11 +344,10 @@ public class commandCentre {
         return 1;
     }
 
-    private static int giantTree(CommandContext<ServerCommandSource> context, int targetHeight) throws CommandSyntaxException {
+    private static int giantTree(CommandContext<ServerCommandSource> context, int targetHeight, BlockPos base, Block trunkBlock, Block leafBlock) throws CommandSyntaxException {
         ServerPlayerEntity player = context.getSource().getPlayer();
         World world = context.getSource().getWorld();
         MinecraftServer server = context.getSource().getServer();
-        BlockPos base = player.getBlockPos();
 
         float delta = 20F;
         float decay = 0.8F;
@@ -351,8 +366,8 @@ public class commandCentre {
         float baseHeight = estimateMaxHeight(sentence, delta, 1F, decay);
         float branchLength = targetHeight / Math.max(baseHeight, 1F);
 
-        player.sendMessage(Text.of("Generating giant tree (target height: " + targetHeight + ", branch length: " + String.format("%.2f", branchLength) + ")"), false);
-        FractalBuilder.asyncThree(server, world, base.getX(), base.getY(), base.getZ(), branchLength, radius, delta, iterations, axiom, rules, player, Blocks.OAK_WOOD, decay);
+        player.sendMessage(Text.of("Generating giant tree at " + base.toShortString() + " (height: " + targetHeight + ", branch length: " + String.format("%.2f", branchLength) + ", trunk: " + trunkBlock.getName().getString() + ", leaf: " + leafBlock.getName().getString() + ")"), false);
+        FractalBuilder.asyncThree(server, world, base.getX(), base.getY(), base.getZ(), branchLength, radius, delta, iterations, axiom, rules, player, trunkBlock, leafBlock, decay);
         return 1;
     }
 

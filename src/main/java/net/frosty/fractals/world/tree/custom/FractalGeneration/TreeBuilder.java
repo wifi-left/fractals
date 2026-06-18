@@ -23,11 +23,9 @@ public class TreeBuilder {
         float distance = start.distance(end);
         Vector3f pos = new Vector3f(start);
 
-        BlockState state;
-        if (block.equals(Blocks.OAK_LEAVES)) {
-            state = block.getDefaultState().with(Properties.PERSISTENT, true);
-        } else{
-            state = block.getDefaultState();
+        BlockState state = block.getDefaultState();
+        if (state.contains(Properties.PERSISTENT)) {
+            state = state.with(Properties.PERSISTENT, true);
         }
 
         while (start.distance(pos)<distance){
@@ -110,7 +108,7 @@ public class TreeBuilder {
 
     }
 
-    public static void drawLeaf(Vector3f start, Vector3f dir,float radius, World world){
+    public static void drawLeaf(Vector3f start, Vector3f dir,float radius, World world, Block leafBlock){
         Vector3f centre  = new Vector3f(start).add(new Vector3f(dir).mul(radius));
 
         Vector3f arbitrary = new Vector3f((float)Math.random(),(float)Math.random(),(float)Math.random());
@@ -123,12 +121,12 @@ public class TreeBuilder {
             float sinT = (float) Math.sin(theta);
             Vector3f offset = new Vector3f(dir).mul(cosT*radius).add(new Vector3f(normal).mul(sinT*radius*0.5F));
             Vector3f ovalPoint = new Vector3f(centre).add(offset);
-            drawBranch(centre,ovalPoint,world, ModBlocks.LIGHT_LEAVES);
+            drawBranch(centre,ovalPoint,world, leafBlock);
         }
 
     }
 
-    public static void drawSphereLeaf(Vector3f start, Vector3f dir,float radius, World world){
+    public static void drawSphereLeaf(Vector3f start, Vector3f dir,float radius, World world, Block leafBlock){
         Vector3f centre  = new Vector3f(start).add(new Vector3f(dir).mul(radius));
 
         Vector3f arbitrary = Math.abs(dir.y) < 0.9f ? new Vector3f(0,1,0) : new Vector3f(1,0,0);
@@ -145,7 +143,7 @@ public class TreeBuilder {
 
                 Vector3f offset = new Vector3f(dir).mul(x).add(new Vector3f(normal).mul(y)).add(new Vector3f(binormal).mul(z));
                 Vector3f spherePoint = new Vector3f(centre).add(offset);
-                drawBranch(centre, spherePoint, world, Blocks.OAK_LEAVES);
+                drawBranch(centre, spherePoint, world, leafBlock);
             }
         }
 
@@ -183,8 +181,8 @@ public class TreeBuilder {
                 draw3DBranch(prev, pos, radius, world, block);
 
             } else if (symbol.equals("L")){
-                drawLeaf(pos,direction,5F,world);
-//                drawSphereLeaf(pos,direction,4F,world);
+                drawLeaf(pos,direction,5F,world, ModBlocks.LIGHT_LEAVES);
+//                drawSphereLeaf(pos,direction,4F,world, ModBlocks.LIGHT_LEAVES);
 
             } else if (symbol.equals("-")) {
                 direction.mul(new Matrix3f().rotationY(-delta));
@@ -229,7 +227,7 @@ public class TreeBuilder {
         }
     }
 
-    public static void buildThreeFractal(String[] sentence, int x, int y, int z, float delta, float length, float radius, World world, ServerPlayerEntity player, int iteration, Block block, Float decay) {
+    public static void buildThreeFractal(String[] sentence, int x, int y, int z, float delta, float length, float radius, World world, ServerPlayerEntity player, int iteration, Block block, Block leafBlock, Float decay) {
         Stack<Vector3f> posStack = new Stack<>();
         Stack<Vector3f> dirStack = new Stack<>();
         Stack<Vector3f> upStack = new Stack<>();
@@ -272,7 +270,7 @@ public class TreeBuilder {
                 draw3DBranch(prev, pos, radius, world, block);
 
             } else if (symbol.equals("L")){
-                drawLeaf(pos,direction,4F,world);
+                drawLeaf(pos,direction,4F,world, leafBlock);
 
             } else if (symbol.equals("-")) {
                 Matrix3f rot = new Matrix3f().rotation(-delta, up.x, up.y, up.z);
